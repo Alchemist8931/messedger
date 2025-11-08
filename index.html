@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#0c0f14" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Клиентский Мессенджер</title>
+  <title>private messenger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     :root{
       /* === Обновлённая палитра под визуал из примера === */
@@ -41,6 +43,14 @@
       --viewport-height: 100dvh;
       --keyboard-offset: 0px;
       --viewport-offset-top: 0px;
+
+       --ui-surface:#212121;
+      --ui-surface-alt:#333333;
+      --ui-border:#cfcfcf;
+      --ui-text-primary:#f4f4f5;
+      --ui-text-secondary:#71717a;
+      --ui-shadow:0px 2px 4px rgba(0,0,0,.5);
+      --ui-radius-lg:12px;
     }
 
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -49,7 +59,7 @@
       margin:0;
       background:radial-gradient(circle at top,#111725 0%,#080a0f 55%,#05070b 100%);
       color:var(--text);
-      font: 400 var(--fz)/1.45 "SF Pro Display", "Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
+      font: 400 var(--fz)/1.45 'Comfortaa', "SF Pro Display", "Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
       letter-spacing:0.01em;
       overflow:hidden;
     }
@@ -406,16 +416,52 @@
     .list{display:flex;flex-direction:column;gap:8px}
     .item{background:linear-gradient(180deg,rgba(26,32,44,.95),rgba(12,16,24,.92));border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:14px;box-shadow:0 24px 52px rgba(5,8,14,.45)}
 
-    /* ====== Модалка входа/регистрации ====== */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000}
-    .modal__card{width:92%;max-width:420px;background:linear-gradient(180deg,rgba(24,29,40,.98),rgba(12,16,25,.94));border:1px solid rgba(255,255,255,.05);border-radius:26px;padding:20px;box-shadow:0px 40px 80px rgba(4,7,14,.65);backdrop-filter:blur(18px)}
-    .tabs{display:flex;gap:10px;margin-bottom:14px}
-    .tab{flex:1;background:rgba(19,23,33,.78);border:1px solid rgba(255,255,255,.05);border-radius:18px;color:var(--muted);padding:12px;transition:all .3s ease;font-weight:600}
-    .tab--active{background:linear-gradient(180deg,var(--accent),var(--accent-2));border-color:rgba(255,255,255,.16);color:#111620;box-shadow:0px 20px 40px rgba(243,195,112,.52)}
-    .fld label{display:block;font-size:13px;color:rgba(246,248,255,.7);margin:8px 0 4px;letter-spacing:0.03em;text-transform:uppercase}
-    .fld input{width:100%;background:rgba(19,23,33,.92);border:1px solid rgba(255,255,255,.05);border-radius:18px;color:var(--text);padding:14px;font-size:16px;transition:border-color .3s ease,box-shadow .3s ease}
-    .fld input:focus{border-color:rgba(243,195,112,.65);box-shadow:0 0 0 3px rgba(243,195,112,.18)}
-    .info{background:rgba(19,23,33,.82);border:1px solid rgba(255,255,255,.06);color:var(--muted);padding:14px;border-radius:18px;margin-top:12px}
+    .modal{position:fixed;inset:0;padding:24px;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:1000}
+    .modal__card{width:min(100%,620px);max-height:min(940px,calc(100% - 48px));background:var(--ui-surface);border-radius:var(--ui-radius-lg);border:1px solid var(--ui-border);padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden;color:var(--ui-text-primary)}
+    .modalRow{display:flex;position:relative;flex-direction:row;background:none;gap:10px}
+    .modalColumn{display:flex;position:relative;flex-direction:column;background:none;gap:10px}
+    .title{color:var(--ui-border);font-size:20px;text-transform:uppercase;font-weight:600;margin:10px 0 20px;width:auto}
+    .tabs{display:flex;gap:8px;padding:4px;width:fit-content;background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:10px;box-shadow:var(--ui-shadow);margin-top:0}
+    .tab{flex:1;min-width:0;max-width:280px;padding:10px 26px;border:none;background:none;border-radius:8px;font-size:16px;color:var(--ui-text-primary);cursor:pointer;position:relative;font-weight:600;height:fit-content;text-transform:uppercase}
+    .tab::before{content:"";position:absolute;height:100%;inset:0;background:transparent;border-radius:inherit;z-index:-1;transition:background .3s ease}
+    .tab.tab--active{color:var(--ui-text-secondary)}
+    .tab.tab--active::before{background:var(--ui-text-primary)}
+    ::view-transition-group(*){animation-duration:.5s;animation-timing-function:linear(0,0.186 3.5%,0.352 7.1%,0.496 10.8%,0.623 14.7%,0.679 16.7%,0.732 18.8%,0.78 20.9%,0.821 23%,0.86 25.2%,0.895 27.5%,0.925 29.8%,0.951 32.2%,0.97 34.2%,0.986 36.3%,1 38.5%,1.012 40.7%,1.021 43%,1.028 45.4%,1.033 48%,1.036 50.7%,1.037 54.8%,1.034 59.6%,1.012 76.6%,1.004 84.2%,1.001 91.3%,1)}
+    ::view-transition-group(tab-1),::view-transition-group(tab-2),::view-transition-group(tab-3){z-index:1}
+    ::view-transition-old(*),::view-transition-new(*){height:100%}
+    .tab::before{view-transition-name:tab-background}
+    .modal-content{position:relative;margin-top:10px;width:100%;flex:1;background:none;border-radius:var(--ui-radius-lg);border:1px solid var(--ui-border);padding:16px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+    .modal-chat{position:relative;width:100%;background:none;border-radius:var(--ui-radius-lg);border:1px solid var(--ui-border);padding:16px;display:flex;flex-direction:column;gap:12px}
+    .button{width:100%;padding:10px;background:var(--ui-text-primary);border:1px solid var(--ui-surface);color:var(--ui-surface);font-size:14px;font-weight:600;border-radius:10px;height:40px;cursor:pointer;transition:all .4s;text-transform:uppercase;box-shadow:none}
+    .button:hover{color:var(--ui-text-primary);border:1px solid var(--ui-text-primary);background:var(--ui-surface);box-shadow:none}
+    .input{width:100%;height:40px;padding:14px;border-radius:10px;font-size:15px;font-weight:500;border:1px solid var(--ui-text-primary);outline:none;transition:all 1s cubic-bezier(0.19,1,0.22,1);box-shadow:0 0 20px -18px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;background:var(--ui-surface);color:var(--ui-text-primary)}
+    .input::placeholder{color:var(--ui-text-secondary)}
+    .input:active{transform:scale(0.98)}
+    .input:focus{border:1px solid var(--ui-text-primary)}
+    .fld label{display:block;font-size:13px;color:var(--ui-text-primary);margin:0 0 4px;letter-spacing:0.03em;text-transform:uppercase}
+    .info{background:var(--ui-surface-alt);border:1px solid var(--ui-border);color:var(--ui-text-primary);padding:14px;border-radius:var(--ui-radius-lg);margin-top:12px;box-shadow:var(--ui-shadow)}
+    .Btn{width:60px;height:40px;border:1px solid rgb(214,214,214);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;background-color:var(--ui-surface-alt);transition-duration:.3s;box-shadow:2px 2px 10px rgba(0,0,0,.11)}
+    .svgIcon{fill:rgb(255,255,255);animation:slide-in-top 1s linear infinite}
+    .icon2{width:18px;height:5px;border-bottom:2px solid rgb(235,235,235);border-left:2px solid rgb(235,235,235);border-right:2px solid rgb(235,235,235)}
+    @keyframes slide-in-top{0%{transform:translateY(-10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+    nav menuitem{position:relative;display:block;opacity:0;cursor:pointer;z-index:10000}
+    nav menuitem>menu{position:absolute;pointer-events:none}
+    nav>menu{display:flex}
+    nav>menu>menuitem{pointer-events:all;opacity:1}
+    menu menuitem a{white-space:nowrap;display:block;user-select:none}
+    menuitem:hover>menu{pointer-events:initial}
+    menuitem:hover>menu>menuitem,menu:hover>menuitem{opacity:1}
+    nav>menu>menuitem menuitem menu{transform:translateX(100%);top:0;right:0}
+    nav{margin-top:0;margin-left:0}
+    nav a{background:var(--ui-surface);color:var(--ui-text-primary);width:min(400px,100%);transition:background .5s,color .5s,transform .5s;padding:10px 10px;box-sizing:border-box;border-radius:12px;border:1px solid var(--ui-text-primary);box-shadow:var(--ui-shadow);position:relative;height:40px}
+    nav a:hover{color:var(--ui-surface);background:var(--ui-text-primary);box-shadow:0 0 6px var(--ui-text-primary)}
+    nav a:active{box-shadow:0 0 3px var(--ui-text-primary);color:var(--ui-text-primary);transform:scale(0.95);background:var(--ui-surface)}
+    nav>menu>menuitem>a+menu:after{content:"";position:absolute;border:6px solid transparent;border-top:6px solid var(--ui-text-primary);left:14px;top:-32px}
+    nav menuitem>menu>menuitem>a+menu:after{content:"";position:absolute;border:6px solid transparent;border-left:6px solid var(--ui-text-primary);top:14px;left:-218px;transition:opacity .3s,transform 0s}
+    nav>menu>menuitem>menu>menuitem{transition:transform .3s,opacity .3s;transform:translateY(150%);opacity:0}
+    nav>menu>menuitem:hover>menu>menuitem,nav>menu>menuitem.hover>menu>menuitem{transform:translateY(0);opacity:1}
+    menuitem>menu>menuitem>menu>menuitem{transition:transform .3s,opacity .3s;transform:translateX(195px) translateY(0);opacity:0}
+    menuitem>menu>menuitem:hover>menu>menuitem,menuitem>menu>menuitem.hover>menu>menuitem{transform:translateX(0) translateY(0);opacity:1}
 
    /* ====== Панель вкладок ====== */
     .tabbar{
@@ -533,48 +579,52 @@
         <button id="tab-reg" class="tab">registration</button>
       </div>
 
-      <div id="login-view">
-        <div class="fld">
-          <label>email</label>
-          <input id="login-email" type="email" inputmode="email" autocomplete="username" required />
-        </div>
-        <div class="fld">
-          <label>password</label>
-          <input id="login-pass" type="password" autocomplete="current-password" required />
-        </div>
-        <button id="login-btn" class="btn btn--primary" style="width:100%;margin-top:10px">login</button>
+      <div class="modal-content">
+        <div class="modalColumn">
+          <div id="login-view" class="modal-chat">
+            <div class="fld">
+              <label>email</label>
+              <input id="login-email" class="input" type="email" inputmode="email" autocomplete="username" required />
+            </div>
+            <div class="fld">
+              <label>password</label>
+              <input id="login-pass" class="input" type="password" autocomplete="current-password" required />
+            </div>
+            <button id="login-btn" class="btn btn--primary button" style="margin-top:10px">login</button>
 
-        <div id="login-pending" class="info hidden">
-          <strong>Заявка ожидает подтверждения</strong>
-          <div>Ваши данные приняты. Пожалуйста, дождитесь подтверждения администратором ресурса. Если вы с ним знакомы — уведомьте удобным способом.</div>
-        </div>
-      </div>
+            <div id="login-pending" class="info hidden">
+              <strong>Заявка ожидает подтверждения</strong>
+              <div>Ваши данные приняты. Пожалуйста, дождитесь подтверждения администратором ресурса. Если вы с ним знакомы — уведомьте удобным способом.</div>
+            </div>
+          </div>
 
-      <div id="reg-view" class="hidden">
-        <div class="fld">
-          <label>Ваш никнейм (в чате)</label>
-          <input id="reg-name" type="text" minlength="2" autocomplete="name" required />
-        </div>
-        <div class="fld">
-          <label>Логин (для входа)</label>
-          <input id="reg-username" type="text" minlength="3" maxlength="32" pattern="[a-zA-Z0-9_.-]{3,32}" autocomplete="nickname" required />
-        </div>
-        <div class="fld">
-          <label>Пароль (для входа)</label>
-          <input id="reg-pass" type="password" minlength="6" autocomplete="new-password" required />
-        </div>
-        <div class="fld">
-          <label>Email</label>
-          <input id="reg-email" type="email" inputmode="email" autocomplete="username" required />
-        </div>
-        <div class="fld">
-          <label>Телефон</label>
-          <input id="reg-phone" type="tel" inputmode="tel" autocomplete="tel" />
-        </div>
-        <button id="reg-btn" class="btn btn--primary" style="width:100%;margin-top:10px">Зарегистрироваться</button>
-        <div id="reg-ok" class="info hidden">
-          <strong>Ваши регистрационные данные приняты</strong>
-          <div>Ожидайте подтверждения администратором. Если вы знакомы — сообщите ему о необходимости одобрения.</div>
+          <div id="reg-view" class="modal-chat hidden">
+            <div class="fld">
+              <label>Ваш никнейм (в чате)</label>
+              <input id="reg-name" class="input" type="text" minlength="2" autocomplete="name" required />
+            </div>
+            <div class="fld">
+              <label>Логин (для входа)</label>
+              <input id="reg-username" class="input" type="text" minlength="3" maxlength="32" pattern="[a-zA-Z0-9_.-]{3,32}" autocomplete="nickname" required />
+            </div>
+            <div class="fld">
+              <label>Пароль (для входа)</label>
+              <input id="reg-pass" class="input" type="password" minlength="6" autocomplete="new-password" required />
+            </div>
+            <div class="fld">
+              <label>Email</label>
+              <input id="reg-email" class="input" type="email" inputmode="email" autocomplete="username" required />
+            </div>
+            <div class="fld">
+              <label>Телефон</label>
+              <input id="reg-phone" class="input" type="tel" inputmode="tel" autocomplete="tel" />
+            </div>
+            <button id="reg-btn" class="btn btn--primary button" style="margin-top:10px">Зарегистрироваться</button>
+            <div id="reg-ok" class="info hidden">
+              <strong>Ваши регистрационные данные приняты</strong>
+              <div>Ожидайте подтверждения администратором. Если вы знакомы — сообщите ему о необходимости одобрения.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
