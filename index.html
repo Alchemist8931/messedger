@@ -439,39 +439,43 @@
   };
 
   async function postAuth(){
-    const { data: { user } } = await sb.auth.getUser();
-    if(!user){ show(authModal); return; }
+  const { data: { user }, error: uErr } = await sb.auth.getUser();
+  if(!user){ show(authModal); return; }
 
-    // Определяем роль
-    const { data: aRow } = await sb.from('admin_users').select('*').eq('id', user.id).maybeSingle();
-    if(aRow){
-      actor = { kind:'admin', role: aRow.role, row: aRow };
-      roleBadge.textContent = aRow.role.toUpperCase();
-      show(adminBtn);
-      show(clientSwitcher);
-      show(addDealBtn); // админы могут создавать сделки
-      hide(authModal);
-      await fillAdminClientSwitcher();
-    }else{
-      const { data: cRow } = await sb.from('clients').select('*').eq('id', user.id).maybeSingle();
-      if(!cRow){ show(authModal); return; }
-      if(!cRow.approved){
-        show(authModal);
-        tabLogin.click();
-        show(loginPending);
-        return;
-      }
-      actor = { kind:'client', row: cRow };
-      roleBadge.textContent = 'CLIENT';
-      titleEl.textContent = 'Ваш чат';
-      hide(adminBtn);
-      hide(clientSwitcher);
-      hide(authModal);
-      currentClientId = cRow.id;
-      show(addDealBtn); // при необходимости отключите
-      await afterClientSelected();
-    }
+  // 1) Проверяем admin_users
+  const { data: aRow, error: aErr } =
+    await sb.from('admin_users').select('*').eq('id', user.id).maybeSingle();
+
+  if (aErr) { alert('RLS admin_users: ' + aErr.message); return; }
+
+  if (aRow){
+    actor = { kind:'admin', role: aRow.role, row: aRow };
+    roleBadge.textContent = aRow.role.toUpperCase();
+    show(adminBtn); show(clientSwitcher); show(addDealBtn);
+    hide(authModal);
+    await fillAdminClientSwitcher();
+    return;
   }
+
+  // 2) Проверяем clients (для обычного клиента)
+  const { data: cRow, error: cErr } =
+    await sb.from('clients').select('*').eq('id', user.id).maybeSingle();
+
+  if (cErr) { alert('RLS clients: ' + cErr.message); return; }
+
+  if(!cRow){ show(authModal); return; }
+  if(!cRow.approved){
+    show(authModal); tabLogin.click(); show(loginPending); return;
+  }
+  actor = { kind:'client', row: cRow };
+  roleBadge.textContent = 'CLIENT';
+  titleEl.textContent = 'Ваш чат';
+  hide(adminBtn); hide(clientSwitcher); hide(authModal);
+  currentClientId = cRow.id;
+  show(addDealBtn);
+  await afterClientSelected();
+}
+
 
   async function fillAdminClientSwitcher(){
     // Список клиентов по роли
