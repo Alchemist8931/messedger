@@ -196,11 +196,16 @@
     }
     .tab{
       padding:calc(10px * var(--k)) calc(26px * var(--k));
-      min-width:calc(140px * var(--k));
       border:none; background:none; border-radius:calc(8px * var(--k));
       font-size:calc(16px * var(--k)); color:var(--text);
       cursor:pointer; position:relative; font-weight:600; height:fit-content;
       view-transition-name: tab-background;
+
+      flex:1 1 0;
+      min-width:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
     .tab.active{ color:var(--muted) }
     .tab.active::before{
