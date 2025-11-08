@@ -297,8 +297,8 @@
     input::placeholder,textarea::placeholder{color:rgba(246,248,255,.4)}
     .deal__form textarea{min-height:90px}
 
-    .btn{border:0;border-radius:16px;padding:14px 18px;font-size:16px;font-weight:600;letter-spacing:0.02em;transition:transform .2s ease,box-shadow .3s ease,background .3s ease}
-    .btn--primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#131720;box-shadow:0 20px 42px rgba(243,195,112,.45)}
+    .btn{border:0;border-radius:8px;padding:16px 42px;font-size:20px;font-weight:600;letter-spacing:0.02em;transition:transform .2s ease,box-shadow .3s ease,background .3s ease}
+    .btn--primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#131720;box-shadow:0 6px 20px rgba(243,195,112,.45)}
     .btn--primary:hover{color:#0b0f16;box-shadow:0 28px 56px rgba(243,195,112,.58);transform:translateY(-1px)}
     .btn--danger{background:linear-gradient(180deg,#ff6d6d,#ff5252);color:#0b0f16;box-shadow:0 18px 40px rgba(255,102,102,.45)}
     .btn--danger:hover{transform:translateY(-1px);box-shadow:0 24px 52px rgba(255,102,102,.6)}
@@ -975,14 +975,43 @@
     active:false,
     pointerId:null,
     startX:0,
-    curX:0
+    curX:0,
+    width:0
   };
+
+  const screensCount = swipe.querySelectorAll('.screen').length;
+  const maxScreenIndex = Math.max(0, screensCount - 1);
+  let activeScreen = 0;
+
+  function applySwipeTransform(offsetPercent = 0){
+    const base = -activeScreen * 100;
+    swipe.style.transform = `translateX(${base + offsetPercent}%)`;
+  }
+
+  function updateTabs(){
+    if(activeScreen === 0){
+      tabChat.classList.add('tabbtn--active');
+      tabDeals.classList.remove('tabbtn--active');
+    } else {
+      tabDeals.classList.add('tabbtn--active');
+      tabChat.classList.remove('tabbtn--active');
+    }
+  }
+
+  function setScreen(idx){
+    const next = Math.min(Math.max(idx, 0), maxScreenIndex);
+    activeScreen = next;
+    swipe.style.transition = '';
+    applySwipeTransform();
+    updateTabs();
+  }
 
   function resetSwipe(){
     swipeState.active = false;
     swipeState.pointerId = null;
     swipeState.startX = 0;
     swipeState.curX = 0;
+    swipeState.width = 0;
   }
 
   swipe.addEventListener('pointerdown', e=>{
@@ -991,27 +1020,34 @@
     swipeState.pointerId = e.pointerId;
     swipeState.startX = e.clientX;
     swipeState.curX = e.clientX;
+    swipeState.width = Math.max(swipe.offsetWidth, 1);
+    swipe.style.transition = 'none';
     try{ swipe.setPointerCapture(e.pointerId); }catch{}
   });
 
   swipe.addEventListener('pointermove', e=>{
     if(!swipeState.active || e.pointerId !== swipeState.pointerId) return;
     swipeState.curX = e.clientX;
+    const dx = swipeState.curX - swipeState.startX;
+    const offsetPercent = (dx / swipeState.width) * 100;
+    applySwipeTransform(offsetPercent);
   });
 
   const finishSwipe = e => {
     if(!swipeState.active || e.pointerId !== swipeState.pointerId) return;
     const dx = swipeState.curX - swipeState.startX;
-    if(dx < -60) goDeals();
-    else if(dx > 60) goChat();
+    swipe.style.transition = '';
+    if(dx < -60 && activeScreen < maxScreenIndex) setScreen(activeScreen + 1);
+    else if(dx > 60 && activeScreen > 0) setScreen(activeScreen - 1);
+    else setScreen(activeScreen);
     try{ swipe.releasePointerCapture(e.pointerId); }catch{}
     resetSwipe();
   };
 
   swipe.addEventListener('pointerup', finishSwipe);
   swipe.addEventListener('pointercancel', finishSwipe);
-  function goChat(){ swipe.style.transform='translateX(0%)'; tabChat.classList.add('tabbtn--active'); tabDeals.classList.remove('tabbtn--active'); }
-  function goDeals(){ swipe.style.transform='translateX(-100%)'; tabDeals.classList.add('tabbtn--active'); tabChat.classList.remove('tabbtn--active'); }
+  function goChat(){ setScreen(0); }
+  function goDeals(){ setScreen(1); }
   tabChat.onclick=goChat; tabDeals.onclick=goDeals;
 
   /********** Init **********/
