@@ -149,6 +149,29 @@
       background-size:8px 8px,8px 8px;
       background-repeat:no-repeat;
     }
+     #client-switcher{
+      background:#151419;
+      border:1px solid #262626;
+      border-radius:8px;
+      padding:10px 36px 10px 14px;
+      color:#878787;
+      font-size:16px;
+      font-weight:600;
+      letter-spacing:0.01em;
+      text-transform:uppercase;
+      box-shadow:0 10px 20px rgba(5,8,14,.55);
+      min-width:0;
+    }
+    #client-switcher:focus{
+      border-color:var(--accent);
+      color:var(--text);
+      box-shadow:0 1px 20px rgba(243,195,112,.45);
+      outline:none;
+    }
+    #client-switcher option{
+      color:#151419;
+      text-transform:none;
+    }
 
     .swipe{flex:1;display:flex;transition:transform .25s ease;will-change:transform;overflow:hidden;touch-action:pan-y}
     .screen{
@@ -856,7 +879,7 @@
     });
     if(rows && rows.length){
       currentClientId = rows[0].id;
-      titleEl.textContent = 'Клиент: ' + (rows[0].full_name || rows[0].username);
+      titleEl.textContent = 'Мессенджер';
       await afterClientSelected();
     }else{
       currentClientId = null;
@@ -867,7 +890,11 @@
     clientSwitcher.onchange = async ()=>{
       const sel = rows.find(x=>x.id===clientSwitcher.value);
       currentClientId = sel?.id || null;
-      titleEl.textContent = sel ? ('Клиент: ' + (sel.full_name || sel.username)) : '—';
+      if(!sel){
+        titleEl.textContent = 'Нет клиентов';
+      } else {
+        titleEl.textContent = 'Мессенджер';
+      }
       await afterClientSelected();
     };
   }
