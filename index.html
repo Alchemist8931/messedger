@@ -123,8 +123,9 @@
     }
 
     /* ====== Меню статусов / клиенты ====== */
-    nav{ margin-top:0; margin-left:0 }
-    nav > menu{ display:flex }
+    nav{ margin-top:0; margin-left:0; margin-right:calc(var(--pad)); }
+    nav > menu{ display:flex; margin:0; padding:0; list-style:none }
+    nav menu{ margin:0; padding:0; list-style:none }
     nav menuitem{ position:relative; display:block; opacity:0; cursor:pointer; z-index:10000 }
     nav > menu > menuitem{ pointer-events:all; opacity:1 }
     nav menuitem > menu{ position:absolute; pointer-events:none }
@@ -158,7 +159,8 @@
       transform:translateY(150%); opacity:0;
     }
     nav > menu > menuitem:hover > menu > menuitem,
-    nav > menu > menuitem.hover > menu > menuitem{
+    nav > menu > menuitem.hover > menu > menuitem,
+    #statusRoot.open > menu > menuitem{
       transform:translateY(0); opacity:1;
     }
     menuitem > menu > menuitem > menu > menuitem{
@@ -169,6 +171,7 @@
     menuitem > menu > menuitem.hover > menu > menuitem{
       transform:translateX(0) translateY(0); opacity:1;
     }
+    #statusRoot.open > menu{ pointer-events:initial }
     nav a:hover{
       color:var(--surface); background:var(--text); box-shadow:0 0 calc(6px * var(--k)) var(--text);
     }
@@ -177,6 +180,7 @@
     }
 
     /* ====== Вкладки ====== */
+    .modalRow{ width:100%; }
     .tabs{
       display:flex; gap:calc(8px * var(--k));
       padding:calc(4px * var(--k));
@@ -417,6 +421,31 @@
     const addDealBtn = document.getElementById('addDealBtn');
 
     const clientsMenu = document.getElementById('clientsMenu');
+    const statusNav = document.getElementById('statusNav');
+    const statusRoot = document.getElementById('statusRoot');
+    const statusToggle = statusRoot?.querySelector('a');
+
+    function closeStatusMenu(){
+      statusRoot?.classList.remove('open');
+    }
+
+    statusToggle?.addEventListener('click', (event)=>{
+      event.preventDefault();
+      event.stopPropagation();
+      statusRoot?.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (event)=>{
+      if(statusNav && !statusNav.contains(event.target)){
+        closeStatusMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (event)=>{
+      if(event.key === 'Escape'){
+        closeStatusMenu();
+      }
+    });
 
     /********** Состояние **********/
     let actor = null;           // { kind:'admin'|'client', role?: 'admin1'|'admin2'|'admin_team', row }
@@ -519,8 +548,10 @@
         const a = document.createElement('a');
         a.textContent = (r.full_name || r.username || r.id) + (r.approved ? '' : ' (не подтв.)');
         a.href = 'javascript:void(0)';
-        a.onclick = async ()=>{
+        a.onclick = async (event)=>{
+          event.preventDefault();
           currentClientId = r.id;
+          closeStatusMenu();
           await reloadAll();
         };
         mi.appendChild(a);
