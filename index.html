@@ -239,14 +239,13 @@
     }
 
     /* ====== Секции ====== */
-    .section{ position:absolute; inset:0; display:none }
-    .section.active{ display:block }
+    .section{ position:absolute; inset:0; display:none; border: none; }
+    .section.active{ display:block; border: none; }
 
     /* ====== CHAT ====== */
     .modal-chat{
       position:relative; width:100%;
       height:calc(100% - calc(56px * var(--k))); /* место под композер */
-      border-bottom:1px solid var(--border);
       overflow-y:auto; padding:calc(10px * var(--k));
     }
     .msg{ display:flex; gap:calc(8px * var(--k)); margin:calc(8px * var(--k)) calc(6px * var(--k)) }
@@ -310,8 +309,7 @@
     /* ====== CONTRACTS ====== */
     .contracts{ position:absolute; inset:0; display:flex; flex-direction:column }
     .contracts-head{
-      padding:calc(10px * var(--k)); display:flex; justify-content:space-between; align-items:center;
-      border-bottom:1px solid var(--border); font-size:calc(16px * var(--k));
+      padding:calc(10px * var(--k)); display:flex; justify-content:space-between; align-items:center; font-size:calc(16px * var(--k));
     }
     .contracts-list{
       flex:1; overflow:auto; padding:calc(10px * var(--k));
