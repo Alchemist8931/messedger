@@ -46,7 +46,11 @@
     body{
       margin:0; background:var(--bg); color:var(--text);
       font: 400 var(--fz)/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
-      overflow:hidden;
+       overflow:auto;
+    }
+    .scale-2{
+      transform:scale(2);
+      transform-origin:top center;
     }
     img,video{max-width:100%;display:block}
 
@@ -79,9 +83,17 @@
     .topbar{
       position:sticky;top:0;padding:12px 16px;padding-top:calc(12px + var(--safe-top));
       background:var(--surface);border-bottom:1px solid var(--hair);
-      display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:10;
+      display:flex;flex-direction:column;gap:12px;z-index:10;
     }
-    .topbar__title{display:flex;align-items:center;gap:10px;font-weight:var(--fw-bold)}
+    .topbar__row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .topbar__user{display:flex;flex-direction:column;gap:4px;min-width:0}
+    .topbar__identity{display:flex;align-items:center;gap:10px;font-weight:var(--fw-bold)}
+    .topbar__name{font-size:var(--fz-lg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar__context{color:var(--muted);font-size:var(--fz-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .topbar__controls{display:flex;align-items:center;gap:8px}
+    .topbar__controls select{min-width:180px}
+    .topbar__tabs{display:flex;gap:8px}
+    .topbar__tabs .tabbtn{flex:1}
     .badge{background:#191d25;border:1px solid #2c3039;color:var(--text);border-radius:999px;padding:2px 10px;font-size:12px}
     .icon-btn{background:#181c24;border:1px solid var(--hair);border-radius:12px;color:var(--text);padding:8px 10px;transition:all .3s ease}
     .icon-btn:hover{border-color:rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.35)}
@@ -93,7 +105,7 @@
       flex-direction:column;
       height:100%;
       overflow:hidden;
-      padding-bottom:96px;
+      padding-bottom:140px;
     }
 
     /* ====== Карточки как на макете ====== */
@@ -129,7 +141,7 @@
     .bubble__meta{margin-top:4px;font-size:12px;color:var(--muted)}
 
     .composer{
-      position:fixed;left:0;right:0;bottom:calc(80px + var(--safe-btm) + var(--keyboard-offset));
+      position:fixed;left:0;right:0;bottom:calc(16px + var(--safe-btm) + var(--keyboard-offset));
       display:flex;gap:8px;align-items:center;padding:10px 12px;background:linear-gradient(180deg,#10141b,#0b0f16);border-top:1px solid rgba(255,255,255,.04)
     }
     .composer input[type="text"]{
@@ -175,7 +187,7 @@
     .btn--danger{background:linear-gradient(180deg,#ff5a5a,#ff3d3d);color:#fff}
     .btn--ghost{background:#181d27;border:1px solid rgba(255,255,255,.08);color:var(--text);transition:all .3s ease}
     .btn--ghost:hover{border-color:var(--accent);color:var(--accent)}
-    .btn--fab{position:fixed;right:14px;bottom:calc(62px + var(--safe-btm));border-radius:999px;padding:12px 16px}
+    .btn--fab{position:fixed;right:14px;bottom:calc(24px + var(--safe-btm));border-radius:999px;padding:12px 16px}
 
     /* ====== Админ-панель (нижний шит) ====== */
     .sheet{position:fixed;left:0;right:0;bottom:0;max-height:72%;background:var(--surface);border-top:1px solid rgba(255,255,255,.06);border-radius:16px 16px 0 0;box-shadow:0px 187px 75px rgba(0, 0, 0, 0.01),0px 105px 63px rgba(0, 0, 0, 0.05),0px 47px 47px rgba(0, 0, 0, 0.09),0px 12px 26px rgba(0, 0, 0, 0.1);display:flex;flex-direction:column}
@@ -195,19 +207,13 @@
     .fld input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(209,120,66,.2)}
     .info{background:#181d27;border:1px solid rgba(255,255,255,.08);color:var(--muted);padding:12px;border-radius:12px;margin-top:10px}
 
-    /* ====== Нижняя панель ====== */
-    .bottombar{
-      position:fixed;left:0;right:0;top:160px;height:76px;padding:8px 10px;padding-bottom:calc(8px + var(--safe-btm));
-      background:var(--surface);border-top:1px solid var(--hair);display:flex;align-items:center;gap:8px
-    }
     .tabbtn{background:#181d27;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;color:var(--muted);transition:all .3s ease}
     .tabbtn--active{background:#1f2531;border-color:var(--accent);color:var(--text);box-shadow:0px 10px 24px rgba(0,0,0,.35)}
-    .grow{flex:1}
   </style>
 </head>
 <body>
   <!-- Блокировка для ПК -->
-  <div id="desktop-blocker" class="desktop-blocker hidden">
+  <div id="desktop-blocker" class="desktop-blocker hidden scale-2">
     <div class="desktop-blocker__card">
       <h1>Использование приложения на ПК не возможно</h1>
       <p class="muted">Это приложение спроектировано для смартфонов. Пожалуйста, откройте ссылку на телефоне или установите как PWA.</p>
@@ -215,16 +221,25 @@
   </div>
 
   <!-- Приложение -->
-  <div id="app" class="app hidden">
+  <div id="app" class="app hidden scale-2">
     <header class="topbar">
-      <div class="topbar__title">
-        <span id="role-badge" class="badge">—</span>
-        <span id="title">Мессенджер</span>
+      <div class="topbar__row">
+        <div class="topbar__user">
+          <div class="topbar__identity">
+            <span id="role-badge" class="badge">—</span>
+            <span id="user-name" class="topbar__name">Мессенджер</span>
+          </div>
+          <div id="context-label" class="topbar__context">—</div>
+        </div>
+        <div class="topbar__controls">
+          <select id="client-switcher" class="icon-btn hidden" title="Выбор клиента"></select>
+          <button id="admin-btn" class="icon-btn hidden" title="Панель администратора">⚙️</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <select id="client-switcher" class="icon-btn hidden" title="Выбор клиента"></select>
-        <button id="admin-btn" class="icon-btn hidden" title="Панель администратора">⚙️</button>
-      </div>
+      <nav class="topbar__tabs">
+        <button id="tab-chat" class="tabbtn tabbtn--active">Чат</button>
+        <button id="tab-deals" class="tabbtn">Сделки</button>
+      </nav>
     </header>
 
     <div id="swipe" class="swipe">
@@ -265,12 +280,6 @@
       </div>
     </div>
 
-    <footer class="bottombar">
-      <button id="tab-chat" class="tabbtn tabbtn--active">Чат</button>
-      <button id="tab-deals" class="tabbtn">Сделки</button>
-      <div class="grow"></div>
-      <button id="logout" class="btn btn--danger">Выход</button>
-    </footer>
   </div>
 
   <!-- Модалка входа/регистрации -->
@@ -338,7 +347,7 @@
 
   /********** Инициализация **********/
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true },
+    auth: { persistSession:false, autoRefreshToken:true, detectSessionInUrl:true },
     realtime: { params: { eventsPerSecond: 5 } }
   });
 
@@ -347,7 +356,8 @@
   const blocker = document.getElementById('desktop-blocker');
 
   const roleBadge = document.getElementById('role-badge');
-  const titleEl = document.getElementById('title');
+  const userNameEl = document.getElementById('user-name');
+  const contextLabel = document.getElementById('context-label');
   const adminBtn = document.getElementById('admin-btn');
   const adminSheet = document.getElementById('admin-sheet');
   const adminClose = document.getElementById('admin-close');
@@ -365,7 +375,6 @@
 
   const dealsWrap = document.getElementById('deals');
   const addDealBtn = document.getElementById('add-deal');
-  const logoutBtn = document.getElementById('logout');
 
   const authModal = document.getElementById('auth-modal');
   const tabLogin = document.getElementById('tab-login');
@@ -501,6 +510,7 @@
   if (aRow){
     actor = { kind:'admin', role: aRow.role, row: aRow };
     roleBadge.textContent = aRow.role.toUpperCase();
+    userNameEl.textContent = aRow.full_name || aRow.username || 'Администратор';
     show(adminBtn); show(clientSwitcher); show(addDealBtn);
     hide(authModal);
     await fillAdminClientSwitcher();
@@ -519,7 +529,8 @@
   }
   actor = { kind:'client', row: cRow };
   roleBadge.textContent = 'CLIENT';
-  titleEl.textContent = 'Ваш чат';
+  userNameEl.textContent = cRow.full_name || cRow.username || 'Клиент';
+  contextLabel.textContent = 'Ваш чат';
   hide(adminBtn); hide(clientSwitcher); hide(authModal);
   currentClientId = cRow.id;
   show(addDealBtn);
@@ -545,18 +556,18 @@
     });
     if(rows && rows.length){
       currentClientId = rows[0].id;
-      titleEl.textContent = 'Клиент: ' + (rows[0].full_name || rows[0].username);
+      contextLabel.textContent = 'Клиент: ' + (rows[0].full_name || rows[0].username);
       await afterClientSelected();
     }else{
       currentClientId = null;
-      titleEl.textContent = 'Нет клиентов';
+      contextLabel.textContent = 'Нет клиентов';
       chatList.innerHTML = '';
       dealsWrap.innerHTML = '';
     }
     clientSwitcher.onchange = async ()=>{
       const sel = rows.find(x=>x.id===clientSwitcher.value);
       currentClientId = sel?.id || null;
-      titleEl.textContent = sel ? ('Клиент: ' + (sel.full_name || sel.username)) : '—';
+      contextLabel.textContent = sel ? ('Клиент: ' + (sel.full_name || sel.username)) : '—';
       await afterClientSelected();
     };
   }
@@ -829,13 +840,6 @@
   function goDeals(){ swipe.style.transform='translateX(-100%)'; tabDeals.classList.add('tabbtn--active'); tabChat.classList.remove('tabbtn--active'); }
   tabChat.onclick=goChat; tabDeals.onclick=goDeals;
 
-  /********** Выход **********/
-  logoutBtn.onclick = async ()=>{
-    await sb.auth.signOut();
-    window.close();
-    setTimeout(()=>{ location.href='about:blank'; }, 200);
-  };
-
   /********** Init **********/
   enforceMobileOnly();
   addEventListener('resize', enforceMobileOnly);
@@ -862,6 +866,7 @@
   }
 
   (async ()=>{
+    try{ await sb.auth.signOut(); }catch{}
     const { data:{ user } } = await sb.auth.getUser();
     if(user){ await postAuth(); } else { show(authModal); }
   })();
