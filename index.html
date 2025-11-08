@@ -15,7 +15,7 @@
 
   <!-- ===== Версия приложения: меняй при каждом деплое ===== -->
   <script>
-    window.APP_VERSION = '2025-11-09-02';
+    window.APP_VERSION = '2025-11-09-03';
     (async () => {
       try {
         const saved = localStorage.getItem('app_version');
@@ -38,10 +38,297 @@
   </script>
 
   <!-- Шрифты (с параметром версии для байпаса кэша) -->
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap&v=2025-11-09-02" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&v=2025-11-09-02" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap&v=2025-11-09-03" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&v=2025-11-09-03" rel="stylesheet">
 
- <style> /* ========================= ПОЛНЫЙ ЭКРАН + ПРОПОРЦИОНАЛЬНОЕ УВЕЛИЧЕНИЕ В PX (без transform: scale; все размеры умножаются на коэффициент --k) ========================= */ :root{ /* База дизайна */ --k: 1; /* коэффициент масштабирования */ /* Цвета */ --bg: #212121; --surface: #212121; --text: #f4f4f5; --muted: #71717a; --border: #cfcfcf; --accent-bg: #f4f4f5; --accent-fg: #212121; /* Геометрия (база) */ --radius-base: 12px; --radius-sm-base: 10px; --pad-base: 20px; /* Итоговые (умножаем на k) */ --radius: calc(var(--radius-base) * var(--k)); --radius-sm: calc(var(--radius-sm-base) * var(--k)); --pad: calc(var(--pad-base) * var(--k)); /* Типографика */ --font: 'Comfortaa', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; --fz: calc(16px * var(--k)); /* Тени */ --shadow-sm: 0 2px 4px rgba(0,0,0,.5); --shadow-md: 2px 2px 10px rgba(0,0,0, .11); /* Анимации */ --dur: .3s; --bezier: cubic-bezier(0.19, 1, 0.22, 1); } /* ====== Градиентный рост k по брейкпоинтам (итог — px) ====== */ @media (min-width: 380px) and (min-height: 700px){ :root{ --k: 1.05 } } @media (min-width: 420px) and (min-height: 760px){ :root{ --k: 1.12 } } @media (min-width: 480px) and (min-height: 820px){ :root{ --k: 1.2 } } @media (min-width: 540px) and (min-height: 900px){ :root{ --k: 1.32 } } @media (min-width: 600px) and (min-height: 960px){ :root{ --k: 1.45 } } @media (min-width: 720px) and (min-height: 1024px){ :root{ --k: 1.6 } } @media (min-width: 840px) and (min-height: 1180px){ :root{ --k: 1.8 } } /* ====== Сбросы ====== */ *{ margin:0; padding:0; box-sizing:border-box; font-family:var(--font) } html, body{ width:100vw; height:100dvh; overflow:hidden; background:var(--bg); color:var(--text); font-size:var(--fz); } /* ====== Полноэкранная сцена и контейнер приложения ====== */ .stage{ position:fixed; inset:0; display:flex; align-items:stretch; justify-content:stretch; background:var(--bg); } .modal{ position:absolute; inset:0; /* во весь экран */ background:var(--bg); /* фон приложения */ border:none; /* без рамки — «не окошко в окошке» */ border-radius:0; /* без скруглений у краёв экрана */ padding:var(--pad); overflow:hidden; z-index:1; } /* ====== Верхний ряд: заголовок + меню статусов ====== */ .modalRow{ display:flex; gap:calc(10px * var(--k)); background:none; align-items:flex-start } .modalColumn{ display:flex; flex-direction:column; gap:calc(10px * var(--k)); background:none } .title{ color:var(--border); font-size:calc(20px * var(--k)); text-transform:uppercase; font-weight:600; margin:calc(10px * var(--k)) 0 calc(20px * var(--k)); min-width:calc(200px * var(--k)); } /* ====== Меню статусов / клиенты ====== */ nav{ margin-top:0; margin-left:0 } nav > menu{ display:flex } nav menuitem{ position:relative; display:block; opacity:0; cursor:pointer; z-index:10000 } nav > menu > menuitem{ pointer-events:all; opacity:1 } nav menuitem > menu{ position:absolute; pointer-events:none } nav > menu > menuitem menuitem menu{ transform:translateX(100%); top:0; right:0 } menu menuitem a{ white-space:nowrap; display:block; user-select:none; background:var(--surface); color:var(--text); width:calc(400px * var(--k)); height:calc(40px * var(--k)); padding:calc(10px * var(--k)); box-sizing:border-box; border-radius:var(--radius); border:1px solid var(--text); box-shadow:var(--shadow-sm); transition: background var(--dur), color var(--dur), transform var(--dur); } menuitem:hover > menu{ pointer-events:initial } menuitem:hover > menu > menuitem, menu:hover > menuitem{ opacity:1 } nav > menu > menuitem > a + menu:after{ content:""; position:absolute; border:calc(6px * var(--k)) solid transparent; border-top:calc(6px * var(--k)) solid var(--text); left:calc(14px * var(--k)); top:calc(-32px * var(--k)); } nav menuitem > menu > menuitem > a + menu:after{ content:""; position:absolute; border:calc(6px * var(--k)) solid transparent; border-left:calc(6px * var(--k)) solid var(--text); top:calc(14px * var(--k)); left:calc(-218px * var(--k)); transition:opacity var(--dur), transform 0s; } nav > menu > menuitem > menu > menuitem{ transition:transform var(--dur), opacity var(--dur); transform:translateY(150%); opacity:0; } nav > menu > menuitem:hover > menu > menuitem, nav > menu > menuitem.hover > menu > menuitem{ transform:translateY(0); opacity:1; } menuitem > menu > menuitem > menu > menuitem{ transition:transform var(--dur), opacity var(--dur); transform:translateX(calc(195px * var(--k))) translateY(0); opacity:0; } menuitem > menu > menuitem:hover > menu > menuitem, menuitem > menu > menuitem.hover > menu > menuitem{ transform:translateX(0) translateY(0); opacity:1; } nav a:hover{ color:var(--surface); background:var(--text); box-shadow:0 0 calc(6px * var(--k)) var(--text); } nav a:active{ box-shadow:0 0 calc(3px * var(--k)) var(--text); color:var(--text); transform:scale(.98); background:var(--surface); } /* ====== Вкладки ====== */ .tabs{ display:flex; gap:calc(8px * var(--k)); padding:calc(4px * var(--k)); width:fit-content; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:rgba(0,0,0,0.1) 0 calc(4px * var(--k)) calc(6px * var(--k)) calc(-1px * var(--k)), rgba(0,0,0,0.1) 0 calc(2px * var(--k)) calc(4px * var(--k)) calc(-2px * var(--k)); margin-top:calc(10px * var(--k)); } .tab{ padding:calc(10px * var(--k)) calc(26px * var(--k)); min-width:calc(140px * var(--k)); border:none; background:none; border-radius:calc(8px * var(--k)); font-size:calc(16px * var(--k)); color:var(--text); cursor:pointer; position:relative; font-weight:600; height:fit-content; view-transition-name: tab-background; } .tab.active{ color:var(--muted) } .tab.active::before{ content:""; position:absolute; inset:0; height:100%; background:var(--text); border-radius:inherit; z-index:-1; } /* View Transitions (как в твоём шаблоне) */ ::view-transition-group(*){ animation-duration:.5s; animation-timing-function: linear( 0,0.186 3.5%,0.352 7.1%,0.496 10.8%,0.623 14.7%, 0.679 16.7%,0.732 18.8%,0.78 20.9%,0.821 23%, 0.86 25.2%,0.895 27.5%,0.925 29.8%,0.951 32.2%, 0.97 34.2%,0.986 36.3%,1 38.5%,1.012 40.7%, 1.021 43%,1.028 45.4%,1.033 48%,1.036 50.7%, 1.037 54.8%,1.034 59.6%,1.012 76.6%,1.004 84.2%, 1.001 91.3%,1 ) } ::view-transition-group(tab-1), ::view-transition-group(tab-2), ::view-transition-group(tab-3){ z-index:1 } ::view-transition-old(*), ::view-transition-new(*){ height:100% } /* ====== Общая рамка контента (занимает всю оставшуюся высоту) ====== */ .modal-content{ position:absolute; left:var(--pad); right:var(--pad); top:calc(var(--pad) + calc(20px * var(--k)) + calc(20px * var(--k))); /* примерная высота заголовка */ /* сдвигаем ниже вкладок */ margin-top:calc(10px * var(--k) + 48px * var(--k)); bottom:var(--pad); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; } /* ====== Секции ====== */ .section{ position:absolute; inset:0; display:none } .section.active{ display:block } /* ====== CHAT ====== */ .modal-chat{ position:relative; width:100%; height:calc(100% - calc(56px * var(--k))); /* место под композер */ border-bottom:1px solid var(--border); overflow-y:auto; padding:calc(10px * var(--k)); } .msg{ display:flex; gap:calc(8px * var(--k)); margin:calc(8px * var(--k)) calc(6px * var(--k)) } .msg.me{ justify-content:flex-end } .bubble{ max-width:92%; background:transparent; border:1px solid var(--border); border-radius:var(--radius); padding:calc(10px * var(--k)) calc(12px * var(--k)); box-shadow:var(--shadow-sm); color:var(--text); line-height:1.45; font-size:calc(14px * var(--k)); } .bubble.me{ background:var(--text); color:var(--accent-fg) } .meta{ margin-top:calc(6px * var(--k)); font-size:calc(12px * var(--k)); color:var(--muted) } .composer{ position:absolute; left:0; right:0; bottom:0; display:flex; gap:calc(10px * var(--k)); align-items:center; padding:calc(8px * var(--k)); background:transparent; } .input{ flex:1; height:calc(40px * var(--k)); padding:calc(14px * var(--k)); border-radius:var(--radius-sm); font-size:calc(15px * var(--k)); font-weight:500; border:1px solid var(--text); outline:none; transition:all 1s var(--bezier); background:var(--surface); color:var(--text); box-shadow:0 0 calc(20px * var(--k)) calc(-18px * var(--k)) rgba(0,0,0,.6); font-variant-numeric:tabular-nums; } .input:active{ transform:scale(.98) } .input:focus{ border:1px solid var(--text) } .button{ width:calc(100px * var(--k)); height:calc(40px * var(--k)); padding:calc(10px * var(--k)); background:var(--accent-bg); color:var(--accent-fg); border:1px solid var(--accent-fg); font-size:calc(14px * var(--k)); font-weight:600; border-radius:var(--radius-sm); cursor:pointer; transition:all .4s; } .button:hover{ color:var(--accent-bg); border:1px solid var(--accent-bg); background:var(--accent-fg) } .Btn{ width:calc(60px * var(--k)); height:calc(40px * var(--k)); border:1px solid rgba(214,214,214,1); border-radius:var(--radius-sm); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; position:relative; background:#333; transition-duration:var(--dur); box-shadow:var(--shadow-md); } .svgIcon{ fill:#fff; animation:slide-in-top 1s linear infinite; transform:scale(var(--k)) } .icon2{ width:calc(18px * var(--k)); height:calc(5px * var(--k)); border-bottom:calc(2px * var(--k)) solid #ebebeb; border-left:calc(2px * var(--k)) solid #ebebeb; border-right:calc(2px * var(--k)) solid #ebebeb; } @keyframes slide-in-top{ 0%{ transform:translateY(calc(-10px * var(--k))); opacity:0 } 100%{ transform:translateY(0); opacity:1 } } /* ====== CONTRACTS ====== */ .contracts{ position:absolute; inset:0; display:flex; flex-direction:column } .contracts-head{ padding:calc(10px * var(--k)); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); font-size:calc(16px * var(--k)); } .contracts-list{ flex:1; overflow:auto; padding:calc(10px * var(--k)); display:flex; flex-direction:column; gap:calc(10px * var(--k)) } .deal{ border:1px solid var(--border); border-radius:var(--radius); padding:calc(12px * var(--k)); background:transparent; box-shadow:var(--shadow-sm); font-size:calc(14px * var(--k)); } .deal h4{ font-size:calc(16px * var(--k)); margin-bottom:calc(6px * var(--k)) } .deal small{ color:var(--muted) } /* ====== Утилиты ====== */ .hidden{ display:none !important } /* ====== Адаптив: без центрирования, всегда полноэкранно ====== */ @media (max-width: 660px){ menu menuitem a{ width:calc(100vw - calc(80px * var(--k))) } .tab{ min-width:auto } } </style>
+  <style>
+    /* =========================
+       ПОЛНЫЙ ЭКРАН + МАСШТАБИРОВАНИЕ (px * --k)
+       ========================= */
+    :root{
+      /* База дизайна */
+      --k: 1; /* коэффициент масштабирования */
+
+      /* Цвета */
+      --bg: #212121;
+      --surface: #212121;
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --border: #cfcfcf;
+      --accent-bg: #f4f4f5;
+      --accent-fg: #212121;
+
+      /* Геометрия (база) */
+      --radius-base: 12px;
+      --radius-sm-base: 10px;
+      --pad-base: 20px;
+
+      /* Итоговые (умножаем на k) */
+      --radius: calc(var(--radius-base) * var(--k));
+      --radius-sm: calc(var(--radius-sm-base) * var(--k));
+      --pad: calc(var(--pad-base) * var(--k));
+
+      /* Типографика */
+      --font: 'Comfortaa', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      --fz: calc(16px * var(--k));
+
+      /* Тени */
+      --shadow-sm: 0 2px 4px rgba(0,0,0,.5);
+      --shadow-md: 2px 2px 10px rgba(0,0,0, .11);
+
+      /* Анимации */
+      --dur: .3s;
+      --bezier: cubic-bezier(0.19, 1, 0.22, 1);
+
+      /* Отступ для поднятия вкладок */
+      --tabs-raise: 20px; /* поднимаем tabs на 20px */
+    }
+
+    /* ====== Градиентный рост k по брейкпоинтам ====== */
+    @media (min-width: 380px) and (min-height: 700px){ :root{ --k: 1.05 } }
+    @media (min-width: 420px) and (min-height: 760px){ :root{ --k: 1.12 } }
+    @media (min-width: 480px) and (min-height: 820px){ :root{ --k: 1.2 } }
+    @media (min-width: 540px) and (min-height: 900px){ :root{ --k: 1.32 } }
+    @media (min-width: 600px) and (min-height: 960px){ :root{ --k: 1.45 } }
+    @media (min-width: 720px) and (min-height: 1024px){ :root{ --k: 1.6 } }
+    @media (min-width: 840px) and (min-height: 1180px){ :root{ --k: 1.8 } }
+
+    /* ====== Сбросы ====== */
+    *{ margin:0; padding:0; box-sizing:border-box; font-family:var(--font) }
+    html, body{ width:100vw; height:100dvh; overflow:hidden; background:var(--bg); color:var(--text); font-size:var(--fz); }
+
+    /* ====== Полноэкранная сцена и контейнер приложения ====== */
+    .stage{
+      position:fixed; inset:0; display:flex; align-items:stretch; justify-content:stretch; background:var(--bg);
+    }
+    .modal{
+      position:absolute; inset:0; /* во весь экран */
+      background:var(--bg);
+      border:none; border-radius:0;
+      padding:var(--pad);
+      overflow:hidden;
+      z-index:1;
+    }
+
+    /* ====== Верхний ряд: заголовок + меню статусов ====== */
+    .modalRow{ display:flex; gap:calc(10px * var(--k)); background:none; align-items:flex-start }
+    .modalColumn{ display:flex; flex-direction:column; gap:calc(10px * var(--k)); background:none }
+    .title{
+      color:var(--border);
+      font-size:calc(20px * var(--k));
+      text-transform:uppercase;
+      font-weight:600;
+      margin:calc(10px * var(--k)) 0 calc(20px * var(--k));
+      min-width:calc(200px * var(--k));
+    }
+
+    /* ====== Меню статусов / клиенты ====== */
+    nav{ margin-top:0; margin-left:0 }
+    nav > menu{ display:flex }
+    nav menuitem{ position:relative; display:block; opacity:0; cursor:pointer; z-index:10000 }
+    nav > menu > menuitem{ pointer-events:all; opacity:1 }
+    nav menuitem > menu{ position:absolute; pointer-events:none }
+    nav > menu > menuitem menuitem menu{ transform:translateX(100%); top:0; right:0 }
+
+    menu menuitem a{
+      white-space:nowrap; display:block; user-select:none;
+      background:var(--surface); color:var(--text);
+      width:calc(400px * var(--k)); height:calc(40px * var(--k));
+      padding:calc(10px * var(--k));
+      box-sizing:border-box; border-radius:var(--radius);
+      border:1px solid var(--text); box-shadow:var(--shadow-sm);
+      transition: background var(--dur), color var(--dur), transform var(--dur);
+    }
+    menuitem:hover > menu{ pointer-events:initial }
+    menuitem:hover > menu > menuitem, menu:hover > menuitem{ opacity:1 }
+
+    nav > menu > menuitem > a + menu:after{
+      content:""; position:absolute; border:calc(6px * var(--k)) solid transparent;
+      border-top:calc(6px * var(--k)) solid var(--text);
+      left:calc(14px * var(--k)); top:calc(-32px * var(--k));
+    }
+    nav menuitem > menu > menuitem > a + menu:after{
+      content:""; position:absolute; border:calc(6px * var(--k)) solid transparent;
+      border-left:calc(6px * var(--k)) solid var(--text);
+      top:calc(14px * var(--k)); left:calc(-218px * var(--k));
+      transition:opacity var(--dur), transform 0s;
+    }
+    nav > menu > menuitem > menu > menuitem{
+      transition:transform var(--dur), opacity var(--dur);
+      transform:translateY(150%); opacity:0;
+    }
+    nav > menu > menuitem:hover > menu > menuitem,
+    nav > menu > menuitem.hover > menu > menuitem{
+      transform:translateY(0); opacity:1;
+    }
+    menuitem > menu > menuitem > menu > menuitem{
+      transition:transform var(--dur), opacity var(--dur);
+      transform:translateX(calc(195px * var(--k))) translateY(0); opacity:0;
+    }
+    menuitem > menu > menuitem:hover > menu > menuitem,
+    menuitem > menu > menuitem.hover > menu > menuitem{
+      transform:translateX(0) translateY(0); opacity:1;
+    }
+    nav a:hover{
+      color:var(--surface); background:var(--text); box-shadow:0 0 calc(6px * var(--k)) var(--text);
+    }
+    nav a:active{
+      box-shadow:0 0 calc(3px * var(--k)) var(--text); color:var(--text); transform:scale(.98); background:var(--surface);
+    }
+
+    /* ====== Вкладки ====== */
+    .tabs{
+      display:flex; gap:calc(8px * var(--k));
+      padding:calc(4px * var(--k));
+      /* РАСТЯГИВАЕМ НА ШИРИНУ ВНУТРЕННЕГО ПОЛЯ ЭКРАНА:
+         внутри .modal уже есть паддинги, так что 100% даст симметричные отступы слева/справа */
+      width:100%;
+      box-sizing:border-box;
+
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      box-shadow:rgba(0,0,0,0.1) 0 calc(4px * var(--k)) calc(6px * var(--k)) calc(-1px * var(--k)),
+                 rgba(0,0,0,0.1) 0 calc(2px * var(--k)) calc(4px * var(--k)) calc(-2px * var(--k));
+
+      /* ПОДНИМАЕМ ТАБЫ НА 20px */
+      margin-top: calc( (10px - var(--tabs-raise)) * var(--k) ); /* 10px базовый — 20px = -10px */
+    }
+    .tab{
+      padding:calc(10px * var(--k)) calc(26px * var(--k));
+      min-width:calc(140px * var(--k));
+      border:none; background:none; border-radius:calc(8px * var(--k));
+      font-size:calc(16px * var(--k)); color:var(--text);
+      cursor:pointer; position:relative; font-weight:600; height:fit-content;
+      view-transition-name: tab-background;
+    }
+    .tab.active{ color:var(--muted) }
+    .tab.active::before{
+      content:""; position:absolute; inset:0; height:100%; background:var(--text);
+      border-radius:inherit; z-index:-1;
+    }
+
+    /* View Transitions */
+    ::view-transition-group(*){
+      animation-duration:.5s;
+      animation-timing-function: linear(
+        0,0.186 3.5%,0.352 7.1%,0.496 10.8%,0.623 14.7%,0.679 16.7%,0.732 18.8%,0.78 20.9%,0.821 23%,0.86 25.2%,0.895 27.5%,0.925 29.8%,0.951 32.2%,
+        0.97 34.2%,0.986 36.3%,1 38.5%,1.012 40.7%,1.021 43%,1.028 45.4%,1.033 48%,1.036 50.7%,1.037 54.8%,1.034 59.6%,1.012 76.6%,1.004 84.2%,1.001 91.3%,1
+      )
+    }
+    ::view-transition-group(tab-1), ::view-transition-group(tab-2), ::view-transition-group(tab-3){ z-index:1 }
+    ::view-transition-old(*), ::view-transition-new(*){ height:100% }
+
+    /* ====== Общая рамка контента ====== */
+    .modal-content{
+      position:absolute;
+      left:var(--pad); right:var(--pad);
+      /* Текущий расчёт top оставляем, чтобы избежать налезания.
+         Табы поднялись — визуально они ближе к верхнему краю, правая граница теперь симметрична. */
+      top:calc(var(--pad) + calc(20px * var(--k)) + calc(20px * var(--k)));
+      margin-top:calc(10px * var(--k) + 48px * var(--k));
+      bottom:var(--pad);
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      overflow:hidden;
+    }
+
+    /* ====== Секции ====== */
+    .section{ position:absolute; inset:0; display:none }
+    .section.active{ display:block }
+
+    /* ====== CHAT ====== */
+    .modal-chat{
+      position:relative; width:100%;
+      height:calc(100% - calc(56px * var(--k))); /* место под композер */
+      border-bottom:1px solid var(--border);
+      overflow-y:auto; padding:calc(10px * var(--k));
+    }
+    .msg{ display:flex; gap:calc(8px * var(--k)); margin:calc(8px * var(--k)) calc(6px * var(--k)) }
+    .msg.me{ justify-content:flex-end }
+    .bubble{
+      max-width:92%;
+      background:transparent;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:calc(10px * var(--k)) calc(12px * var(--k));
+      box-shadow:var(--shadow-sm);
+      color:var(--text); line-height:1.45; font-size:calc(14px * var(--k));
+    }
+    .bubble.me{ background:var(--text); color:var(--accent-fg) }
+    .meta{ margin-top:calc(6px * var(--k)); font-size:calc(12px * var(--k)); color:var(--muted) }
+
+    .composer{
+      position:absolute; left:0; right:0; bottom:0;
+      display:flex; gap:calc(10px * var(--k)); align-items:center; padding:calc(8px * var(--k));
+      background:transparent;
+    }
+    .input{
+      flex:1; height:calc(40px * var(--k)); padding:calc(14px * var(--k));
+      border-radius:var(--radius-sm); font-size:calc(15px * var(--k)); font-weight:500;
+      border:1px solid var(--text); outline:none; transition:all 1s var(--bezier);
+      background:var(--surface); color:var(--text);
+      box-shadow:0 0 calc(20px * var(--k)) calc(-18px * var(--k)) rgba(0,0,0,.6);
+      font-variant-numeric:tabular-nums;
+    }
+    .input:active{ transform:scale(.98) }
+    .input:focus{ border:1px solid var(--text) }
+
+    .button{
+      width:calc(100px * var(--k)); height:calc(40px * var(--k)); padding:calc(10px * var(--k));
+      background:var(--accent-bg); color:var(--accent-fg);
+      border:1px solid var(--accent-fg);
+      font-size:calc(14px * var(--k)); font-weight:600; border-radius:var(--radius-sm);
+      cursor:pointer; transition:all .4s;
+    }
+    .button:hover{ color:var(--accent-bg); border:1px solid var(--accent-bg); background:var(--accent-fg) }
+
+    .Btn{
+      width:calc(60px * var(--k)); height:calc(40px * var(--k));
+      border:1px solid rgba(214,214,214,1); border-radius:var(--radius-sm);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; position:relative; background:#333;
+      transition-duration:var(--dur); box-shadow:var(--shadow-md);
+    }
+    .svgIcon{ fill:#fff; animation:slide-in-top 1s linear infinite; transform:scale(var(--k)) }
+    .icon2{
+      width:calc(18px * var(--k)); height:calc(5px * var(--k));
+      border-bottom:calc(2px * var(--k)) solid #ebebeb;
+      border-left:calc(2px * var(--k)) solid #ebebeb;
+      border-right:calc(2px * var(--k)) solid #ebebeb;
+    }
+    @keyframes slide-in-top{
+      0%{ transform:translateY(calc(-10px * var(--k))); opacity:0 }
+      100%{ transform:translateY(0); opacity:1 }
+    }
+
+    /* ====== CONTRACTS ====== */
+    .contracts{ position:absolute; inset:0; display:flex; flex-direction:column }
+    .contracts-head{
+      padding:calc(10px * var(--k)); display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid var(--border); font-size:calc(16px * var(--k));
+    }
+    .contracts-list{
+      flex:1; overflow:auto; padding:calc(10px * var(--k));
+      display:flex; flex-direction:column; gap:calc(10px * var(--k));
+    }
+    .deal{
+      border:1px solid var(--border); border-radius:var(--radius);
+      padding:calc(12px * var(--k)); background:transparent; box-shadow:var(--shadow-sm);
+      font-size:calc(14px * var(--k));
+    }
+    .deal h4{ font-size:calc(16px * var(--k)); margin-bottom:calc(6px * var(--k)) }
+    .deal small{ color:var(--muted) }
+
+    /* ====== Утилиты ====== */
+    .hidden{ display:none !important }
+
+    /* ====== Адаптив ====== */
+    @media (max-width: 660px){
+      menu menuitem a{ width:calc(100vw - calc(80px * var(--k))) }
+      .tab{ min-width:auto }
+    }
+  </style>
 </head>
 <body>
   <!-- ===== ОСНОВНОЙ ИНТЕРФЕЙС ПО ТВОЕЙ РАЗМЕТКЕ ===== -->
@@ -98,7 +385,7 @@
   </div>
 
   <!-- Supabase UMD (с версией для кэш-байпаса) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js?v=2025-11-09-02"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js?v=2025-11-09-03"></script>
 
   <script>
     /********** Настройки Supabase **********/
