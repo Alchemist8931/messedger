@@ -89,17 +89,23 @@
     .topbar{
       position:sticky;
       top:0;
-      padding:22px 22px 12px;
+      padding:22px 22px 16px;
       padding-top:calc(26px + var(--safe-top));
       background:linear-gradient(180deg,rgba(17,20,28,.95) 0%,rgba(11,14,22,.88) 70%,rgba(9,12,18,.75) 100%);
       border-bottom:1px solid rgba(255,255,255,.04);
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
+      flex-direction:column;
+      align-items:stretch;
+      gap:16px;
       z-index:20;
       backdrop-filter:blur(18px);
       box-shadow:0 24px 48px rgba(5,8,15,.35);
+    }
+    .topbar__row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
     }
     .topbar__title{
       display:flex;
@@ -187,15 +193,16 @@
     .msg{display:flex;gap:10px;align-items:flex-end}
     .msg--me{justify-content:flex-end}
     .bubble{
-      max-width:82%;
+      max-width:94%;
       background:linear-gradient(180deg,rgba(30,36,48,.95),rgba(15,18,25,.92));
       border:1px solid rgba(255,255,255,.04);
       border-radius:18px;
-      padding:12px 16px;
+      padding:18px 24px;
       box-shadow:0 22px 48px rgba(4,8,18,.45);
       word-wrap:break-word;
       position:relative;
       line-height:1.5;
+      font-size:32px;
     }
     .bubble::after{
       content:"";
@@ -211,13 +218,13 @@
       box-shadow:0 22px 48px rgba(240,171,95,.45);
     }
     .bubble--me::after{border-color:rgba(255,255,255,.18)}
-    .bubble__meta{margin-top:6px;font-size:12px;color:rgba(246,248,255,.7)}
+    .bubble__meta{margin-top:12px;font-size:24px;color:rgba(246,248,255,.7)}
 
     .composer{
       position:fixed;
       left:20px;
       right:20px;
-      bottom:calc(108px + var(--safe-btm) + var(--keyboard-offset));
+      bottom:calc(28px + var(--safe-btm) + var(--keyboard-offset));
       display:flex;
       gap:10px;
       align-items:center;
@@ -295,16 +302,6 @@
     .btn--primary:hover{color:#0b0f16;box-shadow:0 28px 56px rgba(243,195,112,.58);transform:translateY(-1px)}
     .btn--danger{background:linear-gradient(180deg,#ff6d6d,#ff5252);color:#0b0f16;box-shadow:0 18px 40px rgba(255,102,102,.45)}
     .btn--danger:hover{transform:translateY(-1px);box-shadow:0 24px 52px rgba(255,102,102,.6)}
-    #logout{
-      min-width:64px;
-      height:50px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:0;
-      border-radius:18px;
-      font-size:15px;
-    }
     .btn--ghost{background:rgba(22,27,36,.92);border:1px solid rgba(255,255,255,.08);color:var(--text);transition:all .3s ease}
     .btn--ghost:hover{border-color:var(--accent);color:var(--accent)}
     .btn--fab{position:fixed;right:24px;bottom:calc(120px + var(--safe-btm));border-radius:999px;padding:14px 18px;box-shadow:0 26px 52px rgba(243,195,112,.45);z-index:24}
@@ -327,24 +324,19 @@
     .fld input:focus{border-color:rgba(243,195,112,.65);box-shadow:0 0 0 3px rgba(243,195,112,.18)}
     .info{background:rgba(19,23,33,.82);border:1px solid rgba(255,255,255,.06);color:var(--muted);padding:14px;border-radius:18px;margin-top:12px}
 
-    /* ====== Нижняя панель ====== */
-    .bottombar{
-      position:fixed;
-      left:16px;
-      right:16px;
-      bottom:calc(18px + var(--safe-btm));
-      height:74px;
+   /* ====== Панель вкладок ====== */
+    .tabbar{
+      width:100%;
+      margin:0;
       padding:12px 14px;
       background:linear-gradient(180deg,rgba(23,28,39,.95) 0%,rgba(12,15,23,.9) 100%);
       border:1px solid rgba(255,255,255,.05);
       display:flex;
       align-items:center;
-      justify-content:space-between;
       gap:12px;
       border-radius:26px;
       box-shadow:0 30px 60px rgba(5,8,14,.55);
       backdrop-filter:blur(18px);
-      z-index:30;
     }
     .tabbtn{
       flex:1;
@@ -369,7 +361,6 @@
       box-shadow:0 20px 40px rgba(243,195,112,.48);
       transform:translateY(-2px);
     }
-    .grow{display:none}
   </style>
 </head>
 <body>
@@ -384,14 +375,20 @@
   <!-- Приложение -->
   <div id="app" class="app hidden">
     <header class="topbar">
-      <div class="topbar__title">
-        <span id="role-badge" class="badge">—</span>
-        <span id="title">messenger</span>
+     <div class="topbar__row">
+        <div class="topbar__title">
+          <span id="role-badge" class="badge">—</span>
+          <span id="title">Мессенджер</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="client-switcher" class="icon-btn hidden" title="Выбор клиента"></select>
+          <button id="admin-btn" class="icon-btn hidden" title="Панель администратора">⚙️</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <select id="client-switcher" class="icon-btn hidden" title="Выбор клиента"></select>
-        <button id="admin-btn" class="icon-btn hidden" title="Панель администратора">⚙️</button>
-      </div>
+      <nav class="tabbar">
+        <button id="tab-chat" class="tabbtn tabbtn--active">Чат</button>
+        <button id="tab-deals" class="tabbtn">Сделки</button>
+      </nav>
     </header>
 
     <div id="swipe" class="swipe">
@@ -431,13 +428,6 @@
         </section>
       </div>
     </div>
-
-    <footer class="bottombar">
-      <button id="tab-chat" class="tabbtn tabbtn--active">chat</button>
-      <button id="tab-deals" class="tabbtn">transactions</button>
-      <div class="grow"></div>
-      <button id="logout" class="btn btn--danger">exit</button>
-    </footer>
   </div>
 
   <!-- Модалка входа/регистрации -->
@@ -531,7 +521,6 @@
 
   const dealsWrap = document.getElementById('deals');
   const addDealBtn = document.getElementById('add-deal');
-  const logoutBtn = document.getElementById('logout');
 
   const authModal = document.getElementById('auth-modal');
   const tabLogin = document.getElementById('tab-login');
@@ -994,13 +983,6 @@
   function goChat(){ swipe.style.transform='translateX(0%)'; tabChat.classList.add('tabbtn--active'); tabDeals.classList.remove('tabbtn--active'); }
   function goDeals(){ swipe.style.transform='translateX(-100%)'; tabDeals.classList.add('tabbtn--active'); tabChat.classList.remove('tabbtn--active'); }
   tabChat.onclick=goChat; tabDeals.onclick=goDeals;
-
-  /********** Выход **********/
-  logoutBtn.onclick = async ()=>{
-    await sb.auth.signOut();
-    window.close();
-    setTimeout(()=>{ location.href='about:blank'; }, 200);
-  };
 
   /********** Init **********/
   enforceMobileOnly();
