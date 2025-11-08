@@ -36,6 +36,8 @@
       /* Поведение */
       --safe-btm: env(safe-area-inset-bottom, 0px);
       --safe-top: env(safe-area-inset-top, 0px);
+      --viewport-height: 100dvh;
+      --keyboard-offset: 0px;
     }
 
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -62,7 +64,12 @@
     .muted{color:var(--muted)}
 
     /* ====== Каркас ====== */
-    .app{display:flex;flex-direction:column;min-height:100svh}
+    .app{
+      display:flex;
+      flex-direction:column;
+      min-height:var(--viewport-height);
+      height:var(--viewport-height);
+    }
     .topbar{
       position:sticky;top:0;padding:12px 16px;padding-top:calc(12px + var(--safe-top));
       background:var(--surface);border-bottom:1px solid var(--hair);
@@ -97,7 +104,7 @@
     .bubble__meta{margin-top:4px;font-size:12px;color:var(--muted)}
 
     .composer{
-      position:fixed;left:0;right:0;bottom:calc(56px + var(--safe-btm));
+      position:fixed;left:0;right:0;bottom:calc(56px + var(--safe-btm) + var(--keyboard-offset));
       display:flex;gap:8px;align-items:center;padding:10px 12px;background:linear-gradient(180deg,#0f1216,#0c0f13);border-top:1px solid var(--hair)
     }
     .composer input[type="text"]{
@@ -789,6 +796,25 @@
   /********** Init **********/
   enforceMobileOnly();
   addEventListener('resize', enforceMobileOnly);
+
+    /********** Динамическая высота и клавиатура **********/
+  const rootStyle = document.documentElement.style;
+  let baseViewportHeight = window.innerHeight;
+  function updateViewportVars(){
+    const vv = window.visualViewport;
+    const height = vv?.height || window.innerHeight;
+    if(window.innerHeight > baseViewportHeight){
+      baseViewportHeight = window.innerHeight;
+    }
+    const offset = Math.max(baseViewportHeight - height, 0);
+    rootStyle.setProperty('--viewport-height', `${height}px`);
+    rootStyle.setProperty('--keyboard-offset', `${offset}px`);
+  }
+  updateViewportVars();
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', updateViewportVars);
+    window.visualViewport.addEventListener('scroll', updateViewportVars);
+  }
 
   (async ()=>{
     const { data:{ user } } = await sb.auth.getUser();
