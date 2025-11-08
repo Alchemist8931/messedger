@@ -972,16 +972,45 @@
   }
 
   /********** Навигация (свайп) **********/
-  let startX=null, curX=null;
-  swipe.addEventListener('touchstart',e=>{ startX=e.touches[0].clientX; curX=startX; },{passive:true});
-  swipe.addEventListener('touchmove',e=>{ curX=e.touches[0].clientX; },{passive:true});
-  swipe.addEventListener('touchend',()=>{
-    if(startX==null) return;
-    const dx = curX - startX;
-    if(dx<-60) goDeals();
-    if(dx>60) goChat();
-    startX=null; curX=null;
+  const swipeState = {
+    active:false,
+    pointerId:null,
+    startX:0,
+    curX:0
+  };
+
+  function resetSwipe(){
+    swipeState.active = false;
+    swipeState.pointerId = null;
+    swipeState.startX = 0;
+    swipeState.curX = 0;
+  }
+
+  swipe.addEventListener('pointerdown', e=>{
+    if(e.pointerType !== 'touch' && e.pointerType !== 'pen' && e.pointerType !== 'mouse') return;
+    swipeState.active = true;
+    swipeState.pointerId = e.pointerId;
+    swipeState.startX = e.clientX;
+    swipeState.curX = e.clientX;
+    try{ swipe.setPointerCapture(e.pointerId); }catch{}
   });
+
+  swipe.addEventListener('pointermove', e=>{
+    if(!swipeState.active || e.pointerId !== swipeState.pointerId) return;
+    swipeState.curX = e.clientX;
+  });
+
+  const finishSwipe = e => {
+    if(!swipeState.active || e.pointerId !== swipeState.pointerId) return;
+    const dx = swipeState.curX - swipeState.startX;
+    if(dx < -60) goDeals();
+    else if(dx > 60) goChat();
+    try{ swipe.releasePointerCapture(e.pointerId); }catch{}
+    resetSwipe();
+  };
+
+  swipe.addEventListener('pointerup', finishSwipe);
+  swipe.addEventListener('pointercancel', finishSwipe);
   function goChat(){ swipe.style.transform='translateX(0%)'; tabChat.classList.add('tabbtn--active'); tabDeals.classList.remove('tabbtn--active'); }
   function goDeals(){ swipe.style.transform='translateX(-100%)'; tabDeals.classList.add('tabbtn--active'); tabChat.classList.remove('tabbtn--active'); }
   tabChat.onclick=goChat; tabDeals.onclick=goDeals;
