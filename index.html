@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0c0f14" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-
-  <!-- Жёсткий анти-кэш для HTML -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+/>
+  <!-- Анти-кэш для HTML -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -15,7 +15,7 @@
 
   <!-- ===== Версия приложения: меняй при каждом деплое ===== -->
   <script>
-    window.APP_VERSION = '2025-11-09-01';
+    window.APP_VERSION = '2025-11-09-02';
     (async () => {
       try {
         const saved = localStorage.getItem('app_version');
@@ -37,1107 +37,583 @@
     })();
   </script>
 
-  <!-- Внешние ресурсы с версионированием -->
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap&v=2025-11-09-01" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&v=2025-11-09-01" rel="stylesheet" />
+  <!-- Шрифты (с параметром версии для байпаса кэша) -->
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap&v=2025-11-09-02" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&v=2025-11-09-02" rel="stylesheet">
 
   <style>
+    /* =========================
+       ДИЗАЙН-ПЕРЕМЕННЫЕ (:root)
+       ========================= */
     :root{
-      /* === Обновлённая палитра под визуал из примера === */
-      --bg:#090c12;              /* общий фон */
-      --surface:#10131a;         /* верхняя/нижняя панели */
-      --surface-glass:rgba(20,24,33,.72);
-      --card:#141923;            /* карточки */
-      --card-2:#0f131d;          /* глубокая тень карточки */
-      --card-glow:rgba(112,148,255,.22);
-      --hair:#1c222d;            /* разделители */
-      --text:#f6f8ff;            /* основной текст */
-      --muted:#8c93a3;           /* приглушённый */
-      --accent:#f3c370;          /* мягкий оранжевый */
-      --accent-2:#f0a85f;        /* нижний градиент акцента */
-      --danger:#ff6666;
-      --ok:#4bd18b;
-      --warn:#f0b429;
+      /* Цвета */
+      --bg: #212121;
+      --surface: #212121;            /* фон элементов по макету */
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --border: #cfcfcf;
 
-      --radius:8px;             /* радиус карточек (крупный) */
-      --radius-sm:5px;          /* радиус поменьше */
-      --shadow:0 6px 24px rgba(0,0,0,.45);     /* тень карточек */
-      --shadow-soft:0 10px 40px rgba(0,0,0,.35);
+      --accent-bg: #f4f4f5;          /* инверсия кнопок */
+      --accent-fg: #212121;
+
+      /* Геометрия */
+      --radius: 12px;
+      --radius-sm: 10px;
+
+      /* Тени и обводки */
+      --shadow-sm: 0 2px 4px rgba(0,0,0,.5);
+      --shadow-md: 2px 2px 10px rgba(0,0,0,.11);
 
       /* Типографика */
-      --fz:16px;                 /* база 16px чтобы не было авто-зума */
-      --fz-sm:13px;
-      --fz-lg:18px;
-      --fw-bold:650;
+      --font: 'Comfortaa', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      --fz: 16px;
 
-      /* Поведение */
-      --safe-btm: env(safe-area-inset-bottom, 0px);
-      --safe-top: env(safe-area-inset-top, 0px);
-      --viewport-height: 100dvh;
-      --keyboard-offset: 0px;
-      --viewport-offset-top: 0px;
+      /* Анимации/переходы */
+      --dur: .3s;
+      --bezier: cubic-bezier(0.19, 1, 0.22, 1);
 
-      /* UI палитра для модалки/элементов */
-      --ui-surface:#212121;
-      --ui-surface-alt:#333333;
-      --ui-border:#cfcfcf;
-      --ui-text-primary:#f4f4f5;
-      --ui-text-secondary:#71717a;
-      --ui-shadow:0px 2px 4px rgba(0,0,0,.5);
-      --ui-radius-lg:12px;
+      /* Размеры контейнера */
+      --modal-w: 620px;
+      --modal-h: 940px;
+
+      /* Габариты внутренних блоков (автоматически считаются ниже) */
+      --content-w: calc(var(--modal-w) - 2*20px); /* - padding */
+      --content-h: calc(var(--modal-h) - 156px);  /* грубая высота контента с учётом хедера/вкладок */
+      --chat-h: calc(var(--content-h) - 50px);    /* минус панель ввода */
     }
 
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:radial-gradient(circle at top,#111725 0%,#080a0f 55%,#05070b 100%);
-      color:var(--text);
-      font: 400 var(--fz)/1.45 'Comfortaa', "SF Pro Display", "Inter", system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
-      letter-spacing:0.01em;
+    /* Сброс и базовые */
+    *{ margin:0; padding:0; box-sizing:border-box; font-family:var(--font) }
+    html, body{
+      width:100vw; height:100vh; overflow:hidden; background:var(--bg); color:var(--text); font-size:var(--fz);
+    }
+
+    /* ======= Модалка-обёртка твоего основного UI ======= */
+    .stage{
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:12px;
+    }
+    .modal{
+      position:relative;
+      width:min(var(--modal-w), 100%);
+      height:min(var(--modal-h), 100%);
+      background:none;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      padding:20px;
       overflow:hidden;
+      z-index:1100;
     }
-    img,video{max-width:100%;display:block}
 
-    h1,h2,h3,h4,h5,h6{color:var(--text);font-weight:var(--fw-bold);letter-spacing:0.01em;margin:0}
-    h3{font-size:18px}
-    p{margin:0;line-height:1.6}
+    /* Верхний ряд: заголовок + меню статусов */
+    .modalRow{ display:flex; gap:10px; background:none }
+    .modalColumn{ display:flex; flex-direction:column; gap:10px; background:none }
 
-    .hidden{display:none !important}
-
-    /* ====== Desktop blocker ====== */
-    .desktop-blocker{
-      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-      background:radial-gradient(circle at top,#121a2d 0%,#070a11 60%,#04060b 100%);
-      z-index:9999;padding:24px;text-align:center;
-    }
-    .desktop-blocker__card{
-      background:linear-gradient(180deg,rgba(24,29,40,.96),rgba(12,16,25,.92));
-      border:1px solid rgba(255,255,255,.05); border-radius:28px; padding:32px; max-width:520px; box-shadow:0 40px 80px rgba(5,8,14,.55);
-    }
-    .desktop-blocker h1{margin:0 0 8px;font-weight:var(--fw-bold)}
-    .muted{color:var(--muted)}
-
-    /* ====== Каркас ====== */
-    .app{
-      position:fixed;
-      left:0;
-      right:0;
-      top:var(--viewport-offset-top);
-      display:flex;
-      flex-direction:column;
-      min-height:var(--viewport-height);
-      height:var(--viewport-height);
-      background:linear-gradient(160deg,rgba(20,24,33,.65) 0%,rgba(10,12,18,.35) 35%,rgba(5,7,12,.85) 100%);
-    }
-    .topbar{
-      position:sticky;
-      top:0;
-      padding:22px 22px 16px;
-      padding-top:calc(26px + var(--safe-top));
-      background:linear-gradient(180deg,rgba(17,20,28,.95) 0%,rgba(11,14,22,.88) 70%,rgba(9,12,18,.75) 100%);
-      border-bottom:1px solid rgba(255,255,255,.04);
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
-      gap:16px;
-      z-index:20;
-      backdrop-filter:blur(18px);
-      box-shadow:0 24px 48px rgba(5,8,15,.35);
-    }
-    .topbar__row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-    }
-    .topbar__title{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      gap:4px;
-      font-weight:var(--fw-bold);
-    }
-    .topbar__title #title{font-size:26px;letter-spacing:0.02em;text-shadow:0 14px 28px rgba(5,8,15,.45)}
-    .badge{
-      background:rgba(25,31,43,.72);
-      border:1px solid rgba(255,255,255,.08);
-      color:var(--muted);
-      border-radius:999px;
-      padding:4px 12px;
-      font-size:12px;
+    .title{
+      color:var(--border);
+      font-size:20px;
       text-transform:uppercase;
-      letter-spacing:0.08em;
       font-weight:600;
-    }
-    .icon-btn{
-      background:var(--surface-glass);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      color:var(--text);
-      padding:10px 14px;
-      min-height:44px;
-      font-size:16px;
-      display:flex;
-      align-items:center;
-      gap:6px;
-      transition:all .3s ease;
-      box-shadow:inset 0 0 0 0 rgba(255,255,255,.05);
-    }
-    .icon-btn:hover{border-color:rgba(255,255,255,.18);box-shadow:0 10px 26px rgba(8,10,16,.35)}
-    select.icon-btn{
-      appearance:none;
-      padding-right:32px;
-      background-image:linear-gradient(45deg,transparent 50%,rgba(246,248,255,.45) 50%),linear-gradient(135deg,rgba(246,248,255,.45) 50%,transparent 50%);
-      background-position:right 12px center,right 6px center;
-      background-size:8px 8px,8px 8px;
-      background-repeat:no-repeat;
-    }
-    #client-switcher{
-      background:#151419;
-      border:1px solid #262626;
-      border-radius:8px;
-      padding:10px 36px 10px 14px;
-      color:#878787;
-      font-size:16px;
-      font-weight:600;
-      letter-spacing:0.01em;
-      text-transform:uppercase;
-      box-shadow:0 10px 20px rgba(5,8,14,.55);
-      min-width:0;
-    }
-    #client-switcher:focus{
-      border-color:var(--accent);
-      color:var(--text);
-      box-shadow:0 1px 20px rgba(243,195,112,.45);
-      outline:none;
-    }
-    #client-switcher option{
-      color:#151419;
-      text-transform:none;
+      margin:10px 0 20px;
+      width:200px;
     }
 
-    .swipe{flex:1;display:flex;transition:transform .25s ease;will-change:transform;overflow:hidden;touch-action:pan-y}
-    .screen{
-      min-width:100%;
-      display:flex;
-      flex-direction:column;
-      height:100%;
+    /* Меню статусов / список клиентов */
+    nav{ margin-top:0; margin-left:0 }
+    nav > menu{ display:flex }
+    nav menuitem{ position:relative; display:block; opacity:0; cursor:pointer; z-index:10000 }
+    nav > menu > menuitem{ pointer-events:all; opacity:1 }
+    nav menuitem > menu{ position:absolute; pointer-events:none }
+    nav > menu > menuitem menuitem menu{ transform:translateX(100%); top:0; right:0 }
+
+    /* Пункты меню */
+    menu menuitem a{
+      white-space:nowrap; display:block; user-select:none;
+      background:var(--surface); color:var(--text);
+      width:400px; height:40px; padding:10px;
+      box-sizing:border-box; border-radius:var(--radius);
+      border:1px solid var(--text);
+      box-shadow:var(--shadow-sm);
+      transition: background var(--dur), color var(--dur), transform var(--dur);
+    }
+    menuitem:hover > menu{ pointer-events:initial }
+    menuitem:hover > menu > menuitem, menu:hover > menuitem{ opacity:1 }
+
+    nav > menu > menuitem > a + menu:after{
+      content:""; position:absolute; border:6px solid transparent; border-top:6px solid var(--text); left:14px; top:-32px;
+    }
+    nav menuitem > menu > menuitem > a + menu:after{
+      content:""; position:absolute; border:6px solid transparent; border-left:6px solid var(--text); top:14px; left:-218px;
+      transition:opacity var(--dur), transform 0s;
+    }
+    nav > menu > menuitem > menu > menuitem{
+      transition:transform var(--dur), opacity var(--dur);
+      transform:translateY(150%); opacity:0;
+    }
+    nav > menu > menuitem:hover > menu > menuitem,
+    nav > menu > menuitem.hover > menu > menuitem{
+      transform:translateY(0); opacity:1;
+    }
+    menuitem > menu > menuitem > menu > menuitem{
+      transition:transform var(--dur), opacity var(--dur);
+      transform:translateX(195px) translateY(0); opacity:0;
+    }
+    menuitem > menu > menuitem:hover > menu > menuitem,
+    menuitem > menu > menuitem.hover > menu > menuitem{
+      transform:translateX(0) translateY(0); opacity:1;
+    }
+    nav a:hover{
+      color:var(--surface); background:var(--text); box-shadow:0 0 6px var(--text);
+    }
+    nav a:active{
+      box-shadow:0 0 3px var(--text); color:var(--text); transform:scale(.95); background:var(--surface);
+    }
+
+    /* Вкладки */
+    .tabs{
+      display:flex; gap:8px; padding:4px; width:fit-content;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      box-shadow:rgba(0,0,0,0.1) 0 4px 6px -1px, rgba(0,0,0,0.1) 0 2px 4px -2px;
+      margin-top:10px;
+    }
+    .tab{
+      padding:10px 26px; width:280px; border:none; background:none; border-radius:8px;
+      font-size:16px; color:var(--text); cursor:pointer; position:relative; font-weight:600; height:fit-content;
+      view-transition-name: tab-background;   /* для анимации */
+    }
+    .tab.active{ color:var(--muted) }
+    .tab.active::before{
+      content:""; position:absolute; inset:0; height:100%; background:var(--text);
+      border-radius:inherit; z-index:-1;
+    }
+
+    /* View transitions — как в твоём примере */
+    ::view-transition-group(*){ animation-duration:.5s; animation-timing-function: linear(0,0.186 3.5%,0.352 7.1%,0.496 10.8%,0.623 14.7%,0.679 16.7%,0.732 18.8%,0.78 20.9%,0.821 23%,0.86 25.2%,0.895 27.5%,0.925 29.8%,0.951 32.2%,0.97 34.2%,0.986 36.3%,1 38.5%,1.012 40.7%,1.021 43%,1.028 45.4%,1.033 48%,1.036 50.7%,1.037 54.8%,1.034 59.6%,1.012 76.6%,1.004 84.2%,1.001 91.3%,1) }
+    ::view-transition-group(tab-1), ::view-transition-group(tab-2), ::view-transition-group(tab-3){ z-index:1 }
+    ::view-transition-old(*), ::view-transition-new(*){ height:100% }
+
+    /* Контент карточки (общая рамка) */
+    .modal-content{
+      position:relative; margin-top:10px;
+      width:min(var(--content-w), calc(100% - 2px));
+      height:calc(100% - 120px);
+      border-radius:var(--radius);
+      border:1px solid var(--border);
       overflow:hidden;
-      padding:6px 20px calc(136px + var(--keyboard-offset));
-      gap:18px;
     }
 
-    /* ====== Карточки как на макете ====== */
-    .card{
-      background:linear-gradient(180deg,rgba(24,29,40,.95),rgba(12,16,25,.92));
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:22px;
-      box-shadow:0 30px 60px rgba(5,8,14,.55);
+    /* ==== CHAT секция ==== */
+    .section{ position:absolute; inset:0; display:none }
+    .section.active{ display:block }
+
+    .modal-chat{
       position:relative;
-      overflow:hidden;
-    }
-    .card::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      border-radius:inherit;
-      border:1px solid rgba(255,255,255,.04);
-      pointer-events:none;
-    }
-
-    /* ====== Чат ====== */
-    .chat-wrap{
-      flex:1;
-      padding:0 2px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+      width:100%;
+      height:calc(100% - 56px); /* оставляем место под composer */
+      border-bottom:1px solid var(--border);
       overflow-y:auto;
-      scrollbar-width:none;
-    }
-    .chat-wrap::-webkit-scrollbar{display:none}
-    .msg{display:flex;gap:6px;align-items:flex-end}
-    .msg--me{justify-content:flex-end}
-    .bubble{
-      max-width:94%;
-      background:linear-gradient(180deg,rgba(30,36,48,.95),rgba(15,18,25,.92));
-      border:1px solid rgba(255,255,255,.04);
-      border-radius:18px;
-      padding:18px 24px;
-      box-shadow:0 22px 48px rgba(4,8,18,.45);
-      word-wrap:break-word;
-      position:relative;
-      line-height:1.5;
-      font-size:32px;
-    }
-    .bubble::after{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      border-radius:inherit;
-      border:1px solid rgba(255,255,255,.02);
-      pointer-events:none;
-    }
-    .bubble--me{
-      background:linear-gradient(180deg,var(--accent) 0%,var(--accent-2) 100%);
-      color:#11161f;
-      box-shadow:0 22px 48px rgba(240,171,95,.45);
-    }
-    .bubble--me::after{border-color:rgba(255,255,255,.18)}
-    .bubble__meta{margin-top:12px;font-size:24px;color:rgba(246,248,255,.7)}
-    .bubble__attachments{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:12px}
-    .bubble__attachment{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:rgba(12,16,24,.92)}
-    .bubble__attachment img,.bubble__attachment video{width:100%;display:block;object-fit:cover;border-radius:inherit}
-    .bubble__attachment video{background:#000}
-    .bubble__attachment audio{width:100%;display:block}
-    .bubble__attachment a{display:flex;align-items:center;gap:8px;padding:10px 12px;color:var(--text);text-decoration:none;font-weight:600}
-    .bubble__attachment a:hover{text-decoration:underline}
-    .bubble__text{line-height:1.5;font-size:32px;white-space:pre-wrap;word-break:break-word}
-    .bubble__attachments + .bubble__text{margin-top:8px}
-
-    .composer{
-      position:fixed;
-      left:20px;
-      right:20px;
-      bottom:calc(28px + var(--safe-btm) + var(--keyboard-offset));
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      padding:10px 12px;
-      background:linear-gradient(180deg,rgba(24,29,40,.98) 0%,rgba(15,18,26,.92) 100%);
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:24px;
-      box-shadow:0 30px 60px rgba(4,7,14,.55);
-      backdrop-filter:blur(16px);
-      z-index:25;
-    }
-    .composer__attachments{
-      display:flex;
-      gap:8px;
-      width:100%;
-      overflow-x:auto;
-      padding:2px 4px 4px;
-      margin-bottom:4px;
-      scrollbar-width:thin;
-    }
-    .composer__attachments.hidden{display:none}
-    .composer__attachments::-webkit-scrollbar{height:4px}
-    .composer__att{
-      position:relative;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(18,22,31,.88);
-      min-width:72px;
-      min-height:72px;
-      overflow:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--text);
-    }
-    .composer__att img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .composer__att-info{
-      padding:8px;
-      text-align:center;
-      font-size:12px;
-      line-height:1.4;
-      word-break:break-word;
-      white-space:pre-wrap;
-    }
-    .composer__att-remove{
-      position:absolute;
-      top:4px;
-      right:4px;
-      width:22px;
-      height:22px;
-      border:none;
-      border-radius:999px;
-      background:rgba(0,0,0,.55);
-      color:#fff;
-      font-size:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-    }
-    .composer__att-remove:hover{background:rgba(0,0,0,.8)}
-    .composer input[type="text"]{
-      flex:1;
-      background:rgba(19,23,33,.92);
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:18px;
-      padding:14px 18px;
-      color:var(--text);
-      font-size:16px;
-      transition:border-color .3s,box-shadow .3s;
-    }
-    .composer input[type="text"]:focus{
-      border-color:rgba(243,195,112,.65);
-      box-shadow:0 0 0 3px rgba(243,195,112,.18);
-    }
-    .composer .file-btn{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:16px;background:rgba(18,22,31,.85);border:1px dashed rgba(255,255,255,.08);transition:border-color .3s ease,background .3s ease;color:var(--muted);font-size:20px}
-    .composer .file-btn:hover{border-color:var(--accent);background:rgba(243,195,112,.12);color:var(--text)}
-    .composer .file-btn input{display:none}
-    .composer .send{
-      height:48px;
-      padding:0 50px;
-      border-radius:18px;
-      border:0;
-      background:linear-gradient(180deg,var(--accent) 0%,var(--accent-2) 100%);
-      color:#11141d;
-      font-weight:600;
-      letter-spacing:0.02em;
-      box-shadow:0 18px 36px rgba(243,195,112,.45);
-      transition:transform .2s ease,box-shadow .3s ease;
-    }
-    .composer .send:disabled{
-      opacity:.65;
-      cursor:default;
-      box-shadow:none;
-    }
-    .composer .send:hover{box-shadow:0 26px 48px rgba(243,195,112,.55)}
-    .composer .send:active{transform:scale(.95)}
-
-    /* ====== Сделки ====== */
-    .deals-wrap{
-      flex:1;
-      padding:0 2px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      overflow-y:auto;
-      scrollbar-width:none;
-    }
-    .deals-wrap::-webkit-scrollbar{display:none}
-    .deal{overflow:hidden;position:relative;border-radius:22px;background:linear-gradient(180deg,rgba(24,29,40,.92),rgba(14,18,26,.92));border:1px solid rgba(255,255,255,.05);box-shadow:0 32px 60px rgba(5,8,14,.55)}
-    .deal::before{content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.04);pointer-events:none}
-    .deal__top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;gap:12px}
-    .deal__title{font-weight:var(--fw-bold);font-size:17px;letter-spacing:0.01em}
-    .deal__body{border-top:1px solid rgba(255,255,255,.04);padding:16px 18px;display:none}
-    .deal--open .deal__body{display:block}
-    .deal__section{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
-    .deal__section:last-child{border-bottom:0;padding-bottom:0;margin-bottom:0}
-    .deal__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    .deal__grid img,.deal__grid video{border-radius:16px;max-height:160px;object-fit:cover;width:100%;box-shadow:0 16px 32px rgba(5,8,14,.45)}
-    .deal__add{display:block;text-align:center;padding:12px;border-radius:16px;border:1px dashed rgba(255,255,255,.08);background:rgba(19,23,33,.85);color:var(--muted);transition:border-color .3s ease,color .3s ease}
-    .deal__add:hover{border-color:var(--accent);color:var(--text)}
-    .deal__form label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
-    .deal__form input,.deal__form textarea{width:100%;background:rgba(19,23,33,.92);border:1px solid rgba(255,255,255,.05);border-radius:16px;color:var(--text);padding:12px;font-size:16px;transition:border-color .3s ease,box-shadow .3s ease}
-    .deal__form input:focus,.deal__form textarea:focus{border-color:rgba(243,195,112,.65);box-shadow:0 0 0 3px rgba(243,195,112,.18)}
-    input::placeholder,textarea::placeholder{color:rgba(246,248,255,.4)}
-    .deal__form textarea{min-height:90px}
-
-    .btn{border:0;border-radius:8px;padding:16px 42px;font-size:20px;font-weight:600;letter-spacing:0.02em;transition:transform .2s ease,box-shadow .3s ease,background .3s ease}
-    .btn--primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#131720;box-shadow:0 6px 20px rgba(243,195,112,.45)}
-    .btn--primary:hover{color:#0b0f16;box-shadow:0 28px 56px rgba(243,195,112,.58);transform:translateY(-1px)}
-    .btn--danger{background:linear-gradient(180deg,#ff6d6d,#ff5252);color:#0b0f16;box-shadow:0 18px 40px rgba(255,102,102,.45)}
-    .btn--danger:hover{transform:translateY(-1px);box-shadow:0 24px 52px rgba(255,102,102,.6)}
-    .btn--ghost{background:rgba(22,27,36,.92);border:1px solid rgba(255,255,255,.08);color:var(--text);transition:all .3s ease}
-    .btn--ghost:hover{border-color:var(--accent);color:var(--accent)}
-    .btn--fab{position:fixed;right:24px;bottom:calc(120px + var(--safe-btm));border-radius:999px;padding:14px 18px;box-shadow:0 26px 52px rgba(243,195,112,.45);z-index:24}
-
-    /* ====== Админ-панель (нижний шит) ====== */
-    .sheet{position:fixed;left:0;right:0;bottom:0;max-height:72%;background:linear-gradient(180deg,rgba(21,25,35,.98),rgba(11,13,20,.95));border-top:1px solid rgba(255,255,255,.05);border-radius:22px 22px 0 0;box-shadow:0px -12px 48px rgba(4,7,14,.6);display:flex;flex-direction:column;backdrop-filter:blur(18px)}
-    .sheet__head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
-    .sheet__body{padding:16px 20px;overflow:auto;display:flex;flex-direction:column;gap:16px}
-    .list{display:flex;flex-direction:column;gap:8px}
-    .item{background:linear-gradient(180deg,rgba(26,32,44,.95),rgba(12,16,24,.92));border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:14px;box-shadow:0 24px 52px rgba(5,8,14,.45)}
-
-    /* ====== Модалка входа/регистрации ====== */
-    .modal{position:fixed;inset:0;padding:24px;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:1000}
-    .modal__card{width:min(100%,620px);max-height:min(940px,calc(100% - 48px));background:var(--ui-surface);border-radius:var(--ui-radius-lg);border:1px solid var(--ui-border);padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden;color:var(--ui-text-primary)}
-    .modalRow{display:flex;position:relative;flex-direction:row;background:none;gap:10px}
-    .modalColumn{display:flex;position:relative;flex-direction:column;background:none;gap:10px}
-    .title{color:var(--ui-border);font-size:20px;text-transform:uppercase;font-weight:600;margin:10px 0 20px;width:auto}
-    .tabs{display:flex;gap:8px;padding:4px;width:fit-content;background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:10px;box-shadow:var(--ui-shadow);margin-top:0}
-    .tab{flex:1;min-width:0;max-width:280px;padding:10px 26px;border:none;background:none;border-radius:8px;font-size:16px;color:var(--ui-text-primary);cursor:pointer;position:relative;font-weight:600;height:fit-content;text-transform:uppercase}
-    .tab::before{content:"";position:absolute;height:100%;inset:0;background:transparent;border-radius:inherit;z-index:-1;transition:background .3s ease}
-    .tab.tab--active{color:var(--ui-text-secondary)}
-    .tab.tab--active::before{background:var(--ui-text-primary)}
-    ::view-transition-group(*){animation-duration:.5s;animation-timing-function:linear(0,0.186 3.5%,0.352 7.1%,0.496 10.8%,0.623 14.7%,0.679 16.7%,0.732 18.8%,0.78 20.9%,0.821 23%,0.86 25.2%,0.895 27.5%,0.925 29.8%,0.951 32.2%,0.97 34.2%,0.986 36.3%,1 38.5%,1.012 40.7%,1.021 43%,1.028 45.4%,1.033 48%,1.036 50.7%,1.037 54.8%,1.034 59.6%,1.012 76.6%,1.004 84.2%,1.001 91.3%,1)}
-    ::view-transition-group(tab-1),::view-transition-group(tab-2),::view-transition-group(tab-3){z-index:1}
-    ::view-transition-old(*),::view-transition-new(*){height:100%}
-    .tab::before{view-transition-name:tab-background}
-    .modal-content{position:relative;margin-top:10px;width:100%;flex:1;background:none;border-radius:var(--ui-radius-lg);border:1px solid var(--ui-border);padding:16px;overflow:auto;display:flex;flex-direction:column;gap:10px}
-    .modal-chat{position:relative;width:100%;background:none;border-radius:var(--ui-radius-lg);border:1px solid var(--ui-border);padding:16px;display:flex;flex-direction:column;gap:12px}
-    .button{width:100%;padding:10px;background:var(--ui-text-primary);border:1px solid var(--ui-surface);color:var(--ui-surface);font-size:14px;font-weight:600;border-radius:10px;height:40px;cursor:pointer;transition:all .4s;text-transform:uppercase;box-shadow:none}
-    .button:hover{color:var(--ui-text-primary);border:1px solid var(--ui-text-primary);background:var(--ui-surface);box-shadow:none}
-    .input{width:100%;height:40px;padding:14px;border-radius:10px;font-size:15px;font-weight:500;border:1px solid var(--ui-text-primary);outline:none;transition:all 1s cubic-bezier(0.19,1,0.22,1);box-shadow:0 0 20px -18px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;background:var(--ui-surface);color:var(--ui-text-primary)}
-    .input::placeholder{color:var(--ui-text-secondary)}
-    .input:active{transform:scale(0.98)}
-    .input:focus{border:1px solid var(--ui-text-primary)}
-    .fld label{display:block;font-size:13px;color:var(--ui-text-primary);margin:0 0 4px;letter-spacing:0.03em;text-transform:uppercase}
-    .info{background:var(--ui-surface-alt);border:1px solid var(--ui-border);color:var(--ui-text-primary);padding:14px;border-radius:var(--ui-radius-lg);margin-top:12px;box-shadow:var(--ui-shadow)}
-    .Btn{width:60px;height:40px;border:1px solid rgb(214,214,214);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;background-color:var(--ui-surface-alt);transition-duration:.3s;box-shadow:2px 2px 10px rgba(0,0,0,.11)}
-    .svgIcon{fill:rgb(255,255,255);animation:slide-in-top 1s linear infinite}
-    .icon2{width:18px;height:5px;border-bottom:2px solid rgb(235,235,235);border-left:2px solid rgb(235,235,235);border-right:2px solid rgb(235,235,235)}
-    @keyframes slide-in-top{0%{transform:translateY(-10px);opacity:0}100%{transform:translateY(0);opacity:1}}
-    nav menuitem{position:relative;display:block;opacity:0;cursor:pointer;z-index:10000}
-    nav menuitem>menu{position:absolute;pointer-events:none}
-    nav>menu{display:flex}
-    nav>menu>menuitem{pointer-events:all;opacity:1}
-    menu menuitem a{white-space:nowrap;display:block;user-select:none}
-    menuitem:hover>menu{pointer-events:initial}
-    menuitem:hover>menu>menuitem,menu:hover>menuitem{opacity:1}
-    nav>menu>menuitem menuitem menu{transform:translateX(100%);top:0;right:0}
-    nav{margin-top:0;margin-left:0}
-    nav a{background:var(--ui-surface);color:var(--ui-text-primary);width:min(400px,100%);transition:background .5s,color .5s,transform .5s;padding:10px 10px;box-sizing:border-box;border-radius:12px;border:1px solid var(--ui-text-primary);box-shadow:var(--ui-shadow);position:relative;height:40px}
-    nav a:hover{color:var(--ui-surface);background:var(--ui-text-primary);box-shadow:0 0 6px var(--ui-text-primary)}
-    nav a:active{box-shadow:0 0 3px var(--ui-text-primary);color:var(--ui-text-primary);transform:scale(0.95);background:var(--ui-surface)}
-    nav>menu>menuitem>a+menu:after{content:"";position:absolute;border:6px solid transparent;border-top:6px solid var(--ui-text-primary);left:14px;top:-32px}
-    nav menuitem>menu>menuitem>a+menu:after{content:"";position:absolute;border:6px solid transparent;border-left:6px solid var(--ui-text-primary);top:14px;left:-218px;transition:opacity .3s,transform 0s}
-    nav>menu>menuitem>menu>menuitem{transition:transform .3s,opacity .3s;transform:translateY(150%);opacity:0}
-    nav>menu>menuitem:hover>menu>menuitem,nav>menu>menuitem.hover>menu>menuitem{transform:translateY(0);opacity:1}
-    menuitem>menu>menuitem>menu>menuitem{transition:transform .3s,opacity .3s;transform:translateX(195px) translateY(0);opacity:0}
-    menuitem>menu>menuitem:hover>menu>menuitem,menuitem>menu>menuitem.hover>menu>menuitem{transform:translateX(0) translateY(0);opacity:1}
-
-    /* ====== Панель вкладок ====== */
-    .tabbar{
-      width:100%;
-      margin:0;
-      padding:10px 10px;
-      background:#151419;
-      border:1px solid #262626;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      border-radius:10px;
-      box-shadow:0 10px 20px rgba(5,8,14,.55);
-      backdrop-filter:blur(18px);
-    }
-    .tabbtn{
-      flex:1;
-      background:#151419;
-      border:1px solid #262626;
-      border-radius:8px;
       padding:10px;
-      font-size:16px;
-      font-weight:600;
-      text-transform:uppercase;
-      letter-spacing:0.01em;
-      transition:all .25s ease;
-      color:#878787;
     }
-    .tabbtn:not(.tabbtn--active):hover{color:var(--text);transform:translateY(-1px)}
-    .tabbtn--active{
-      background:linear-gradient(180deg,var(--accent) 0%,var(--accent-2) 100%);
-      border-color:#ff9933;
-      color:#151419;
-      box-shadow:0 1px 20px #ff9933;
+
+    /* Сообщения */
+    .msg{ display:flex; gap:8px; margin:8px 6px; }
+    .msg.me{ justify-content:flex-end }
+    .bubble{
+      max-width:92%;
+      background:transparent;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:10px 12px;
+      box-shadow:var(--shadow-sm);
+      color:var(--text);
+      line-height:1.45;
+    }
+    .bubble.me{
+      background:var(--text);
+      color:var(--accent-fg);
+    }
+    .meta{ margin-top:6px; font-size:12px; color:var(--muted) }
+
+    /* Composer */
+    .composer{
+      position:absolute; left:0; right:0; bottom:0;
+      display:flex; gap:10px; align-items:center; padding:8px;
+      background:transparent;
+    }
+    .input{
+      flex:1; height:40px; padding:14px; border-radius:var(--radius-sm);
+      font-size:15px; font-weight:500; border:1px solid var(--text); outline:none;
+      transition:all 1s var(--bezier);
+      background:var(--surface); color:var(--text);
+      box-shadow:0 0 20px -18px rgba(0,0,0,.6);
+      font-variant-numeric:tabular-nums;
+    }
+    .input:active{ transform:scale(.98) }
+    .input:focus{ border:1px solid var(--text) }
+
+    .button{
+      width:100px; height:40px; padding:10px;
+      background:var(--accent-bg); color:var(--accent-fg);
+      border:1px solid var(--accent-fg);
+      font-size:14px; font-weight:600; border-radius:var(--radius-sm);
+      cursor:pointer; transition:all .4s;
+    }
+    .button:hover{ color:var(--accent-bg); border:1px solid var(--accent-bg); background:var(--accent-fg) }
+
+    .Btn{
+      width:60px; height:40px; border:1px solid rgba(214,214,214,1);
+      border-radius:var(--radius-sm);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; position:relative; background:#333;
+      transition-duration:var(--dur); box-shadow:var(--shadow-md);
+    }
+    .svgIcon{ fill:#fff; animation:slide-in-top 1s linear infinite }
+    .icon2{ width:18px; height:5px; border-bottom:2px solid #ebebeb; border-left:2px solid #ebebeb; border-right:2px solid #ebebeb }
+    @keyframes slide-in-top{
+      0%{ transform:translateY(-10px); opacity:0 }
+      100%{ transform:translateY(0); opacity:1 }
+    }
+
+    /* ==== CONTRACTS секция ==== */
+    .contracts{
+      position:absolute; inset:0; display:flex; flex-direction:column;
+    }
+    .contracts-head{
+      padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border);
+    }
+    .contracts-list{
+      flex:1; overflow:auto; padding:10px; display:flex; flex-direction:column; gap:10px;
+    }
+    .deal{
+      border:1px solid var(--border); border-radius:var(--radius);
+      padding:12px; background:transparent; box-shadow:var(--shadow-sm);
+    }
+    .deal h4{ font-size:16px; margin-bottom:6px }
+    .deal small{ color:var(--muted) }
+
+    /* Утилиты */
+    .hidden{ display:none !important }
+
+    /* Адаптив (центрируем и позволяем ужиматься) */
+    @media (max-width: 660px){
+      :root{ --modal-w: calc(100vw - 24px); --modal-h: calc(100vh - 24px) }
+      menu menuitem a{ width:calc(100vw - 80px) }
+      .tab{ width:auto }
     }
   </style>
 </head>
 <body>
-  <!-- Блокировка для ПК -->
-  <div id="desktop-blocker" class="desktop-blocker hidden">
-    <div class="desktop-blocker__card">
-      <h1>Использование приложения на ПК не возможно</h1>
-      <p class="muted">Это приложение спроектировано для смартфонов. Пожалуйста, откройте ссылку на телефоне или установите как PWA.</p>
-    </div>
-  </div>
-
-  <!-- Приложение -->
-  <div id="app" class="app hidden">
-    <header class="topbar">
-      <div class="topbar__row">
-        <div class="topbar__title">
-          <span id="role-badge" class="badge">—</span>
-          <span id="title">Мессенджер</span>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <select id="client-switcher" class="icon-btn hidden" title="Выбор клиента"></select>
-          <button id="admin-btn" class="icon-btn hidden" title="Панель администратора">⚙️</button>
-        </div>
+  <!-- ===== ОСНОВНОЙ ИНТЕРФЕЙС ПО ТВОЕЙ РАЗМЕТКЕ ===== -->
+  <div class="stage">
+    <div class="modal" id="appModal">
+      <div class="modalRow" style="align-items:flex-start; justify-content:space-between">
+        <div class="title" id="roleTitle">Admin 1</div>
+        <nav id="statusNav">
+          <menu>
+            <menuitem id="statusRoot">
+              <a>status</a>
+              <menu id="clientsMenu">
+                <!-- сюда динамически прилетят клиенты (menuitem>a) -->
+              </menu>
+            </menuitem>
+          </menu>
+        </nav>
       </div>
-      <nav class="tabbar">
-        <button id="tab-chat" class="tabbtn tabbtn--active">chat</button>
-        <button id="tab-deals" class="tabbtn">contracts</button>
-      </nav>
-    </header>
 
-    <div id="swipe" class="swipe">
-      <!-- Экран: ЧАТ -->
-      <section class="screen">
-        <div id="chat-list" class="chat-wrap"></div>
-        <form id="composer" class="composer">
-          <div id="attachments-preview" class="composer__attachments hidden"></div>
-          <input id="msg-text" type="text" autocomplete="off" placeholder="your message..." />
-          <label class="file-btn">📎
-            <input id="msg-file" type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z" multiple />
-          </label>
-          <button class="send" type="submit">send</button>
-        </form>
-      </section>
-
-      <!-- Экран: СДЕЛКИ -->
-      <section class="screen">
-        <div id="deals" class="deals-wrap"></div>
-        <button id="add-deal" class="btn btn--primary btn--fab hidden">add deal</button>
-      </section>
-    </div>
-
-    <!-- Админ-шит -->
-    <div id="admin-sheet" class="sheet hidden">
-      <div class="sheet__head">
-        <strong>admin Panel</strong>
-        <button id="admin-close" class="icon-btn">✖</button>
-      </div>
-      <div class="sheet__body">
-        <section>
-          <h3>awaiting confirmation</h3>
-          <div id="pending-list" class="list"></div>
-        </section>
-        <section style="margin-top:12px">
-          <h3>appointment of managers</h3>
-          <div id="assign-list" class="list"></div>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модалка входа/регистрации -->
-  <div id="auth-modal" class="modal hidden">
-    <div class="modal__card">
       <div class="tabs">
-        <button id="tab-login" class="tab tab--active">login</button>
-        <button id="tab-reg" class="tab">registration</button>
+        <button class="tab active" id="tabChat" style="view-transition-name: tab-1">CHAT</button>
+        <button class="tab" id="tabContracts" style="view-transition-name: tab-2">CONTRACTS</button>
       </div>
 
       <div class="modal-content">
-        <div class="modalColumn">
-          <div id="login-view" class="modal-chat">
-            <div class="fld">
-              <label>email</label>
-              <input id="login-email" class="input" type="email" inputmode="email" autocomplete="username" required />
-            </div>
-            <div class="fld">
-              <label>password</label>
-              <input id="login-pass" class="input" type="password" autocomplete="current-password" required />
-            </div>
-            <button id="login-btn" class="btn btn--primary button" style="margin-top:10px">login</button>
-
-            <div id="login-pending" class="info hidden">
-              <strong>Заявка ожидает подтверждения</strong>
-              <div>Ваши данные приняты. Пожалуйста, дождитесь подтверждения администратором ресурса. Если вы с ним знакомы — уведомьте удобным способом.</div>
-            </div>
+        <!-- ====== CHAT ====== -->
+        <section class="section active" id="sectionChat">
+          <div class="modal-chat" id="chatList"></div>
+          <div class="composer">
+            <input class="input" id="msgText" placeholder="your message.." autocomplete="off" />
+            <button class="Btn" id="attachBtn" title="Attach">
+              <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512" class="svgIcon">
+                <path d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"/>
+              </svg>
+              <span class="icon2"></span>
+              <input id="fileInput" type="file" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z" hidden />
+            </button>
+            <button class="button" id="sendBtn">send</button>
           </div>
+        </section>
 
-          <div id="reg-view" class="modal-chat hidden">
-            <div class="fld">
-              <label>Ваш никнейм (в чате)</label>
-              <input id="reg-name" class="input" type="text" minlength="2" autocomplete="name" required />
+        <!-- ====== CONTRACTS ====== -->
+        <section class="section" id="sectionContracts">
+          <div class="contracts">
+            <div class="contracts-head">
+              <strong>Contracts</strong>
+              <button class="button" id="addDealBtn">+ add</button>
             </div>
-            <div class="fld">
-              <label>Логин (для входа)</label>
-              <input id="reg-username" class="input" type="text" minlength="3" maxlength="32" pattern="[a-zA-Z0-9_.-]{3,32}" autocomplete="nickname" required />
-            </div>
-            <div class="fld">
-              <label>Пароль (для входа)</label>
-              <input id="reg-pass" class="input" type="password" minlength="6" autocomplete="new-password" required />
-            </div>
-            <div class="fld">
-              <label>Email</label>
-              <input id="reg-email" class="input" type="email" inputmode="email" autocomplete="username" required />
-            </div>
-            <div class="fld">
-              <label>Телефон</label>
-              <input id="reg-phone" class="input" type="tel" inputmode="tel" autocomplete="tel" />
-            </div>
-            <button id="reg-btn" class="btn btn--primary button" style="margin-top:10px">Зарегистрироваться</button>
-            <div id="reg-ok" class="info hidden">
-              <strong>Ваши регистрационные данные приняты</strong>
-              <div>Ожидайте подтверждения администратором. Если вы знакомы — сообщите ему о необходимости одобрения.</div>
-            </div>
+            <div class="contracts-list" id="dealsList"></div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   </div>
 
   <!-- Supabase UMD (с версией для кэш-байпаса) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js?v=2025-11-09-01"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js?v=2025-11-09-02"></script>
 
   <script>
-  /********** Настроечные константы **********/
-  const SUPABASE_URL = "https://guoacfwfjunuqpdvjfwp.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1b2FjZndmanVudXFwZHZqZndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MDEwODYsImV4cCI6MjA3ODE3NzA4Nn0.WuUs9pXqncVnRm33K-Y3DQcpQByk4xVoxVqPPneqRxI";
-
-  /********** Инициализация **********/
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true },
-    realtime: { params: { eventsPerSecond: 5 } }
-  });
-
-  /********** DOM **********/
-  const app = document.getElementById('app');
-  const blocker = document.getElementById('desktop-blocker');
-
-  const roleBadge = document.getElementById('role-badge');
-  const titleEl = document.getElementById('title');
-  const adminBtn = document.getElementById('admin-btn');
-  const adminSheet = document.getElementById('admin-sheet');
-  const adminClose = document.getElementById('admin-close');
-  const pendingList = document.getElementById('pending-list');
-  const assignList = document.getElementById('assign-list');
-
-  const swipe = document.getElementById('swipe');
-  const tabChat = document.getElementById('tab-chat');
-  const tabDeals = document.getElementById('tab-deals');
-
-  const chatList = document.getElementById('chat-list');
-  const composer = document.getElementById('composer');
-  const msgText = document.getElementById('msg-text');
-  const msgFile = document.getElementById('msg-file');
-  const attachmentsPreview = document.getElementById('attachments-preview');
-  const sendBtn = composer ? composer.querySelector('.send') : null;
-
-  const dealsWrap = document.getElementById('deals');
-  const addDealBtn = document.getElementById('add-deal');
-
-  const authModal = document.getElementById('auth-modal');
-  const tabLogin = document.getElementById('tab-login');
-  const tabReg = document.getElementById('tab-reg');
-  const loginView = document.getElementById('login-view');
-  const regView = document.getElementById('reg-view');
-  const loginEmail = document.getElementById('login-email');
-  const loginPass = document.getElementById('login-pass');
-  const loginBtn = document.getElementById('login-btn');
-  const loginPending = document.getElementById('login-pending');
-  const regEmail = document.getElementById('reg-email');
-  const regName = document.getElementById('reg-name');
-  const regUser = document.getElementById('reg-username');
-  const regPhone = document.getElementById('reg-phone');
-  const regPass = document.getElementById('reg-pass');
-  const regBtn = document.getElementById('reg-btn');
-  const regOk = document.getElementById('reg-ok');
-
-  const clientSwitcher = document.getElementById('client-switcher');
-
-  /********** Состояние **********/
-  let actor = null;                // { kind:'admin'|'client', role?: 'admin1'|'admin2'|'admin_team', row }
-  let currentClientId = null;
-  let subMsgs = null, subDeals = null;
-  const MAX_ATTACHMENTS = 10;
-  let pendingAttachments = [];
-
-  /********** Утилиты **********/
-  const isMobile = () => {
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    return isTouch && /Android|iPhone|iPad|iPod/i.test(ua);
-  };
-  const show = el => el.classList.remove('hidden');
-  const hide = el => el.classList.add('hidden');
-  const fmt = ts => new Date(ts).toLocaleString();
-  const IMG_EXT_RE = /(png|jpg|jpeg|webp|gif|heic|heif|bmp|avif)$/i;
-  const VID_EXT_RE = /(mp4|webm|mov|m4v|ogg)$/i;
-  const AUD_EXT_RE = /(mp3|wav|ogg|m4a|aac|flac)$/i;
-
-  function detectFileKind(file){
-    const ext = (file.name.split('.').pop()||'').toLowerCase();
-    if(file.type.startsWith('image/') || IMG_EXT_RE.test(ext)) return 'image';
-    if(file.type.startsWith('video/') || VID_EXT_RE.test(ext)) return 'video';
-    if(file.type.startsWith('audio/') || AUD_EXT_RE.test(ext)) return 'audio';
-    return 'file';
-  }
-
-  function formatBytes(size){
-    if(typeof size !== 'number' || Number.isNaN(size)) return '';
-    if(size <= 0) return '0 Б';
-    const units = ['Б','КБ','МБ','ГБ'];
-    let value = size;
-    let idx = 0;
-    while(value >= 1024 && idx < units.length - 1){
-      value /= 1024;
-      idx++;
-    }
-    const formatted = value.toFixed(idx === 0 ? 0 : (value < 10 ? 1 : 0));
-    return `${formatted} ${units[idx]}`;
-  }
-
-  function truncateFileName(name, max = 28){
-    if(!name) return 'файл';
-    return name.length > max ? name.slice(0, max - 3) + '…' : name;
-  }
-
-  function sanitizeFileName(name){
-    const base = name?.trim() || 'file';
-    const cleaned = base.replace(/[^a-zA-Z0-9_.-]+/g, '_');
-    return cleaned || 'file';
-  }
-
-  function removeAttachment(idx){
-    if(idx < 0 || idx >= pendingAttachments.length) return;
-    const [removed] = pendingAttachments.splice(idx, 1);
-    if(removed?.preview){
-      URL.revokeObjectURL(removed.preview);
-    }
-    refreshAttachmentsPreview();
-  }
-
-  function refreshAttachmentsPreview(){
-    if(!attachmentsPreview) return;
-    attachmentsPreview.innerHTML = '';
-    if(!pendingAttachments.length){
-      attachmentsPreview.classList.add('hidden');
-      return;
-    }
-    attachmentsPreview.classList.remove('hidden');
-    pendingAttachments.forEach((att, idx)=>{
-      const wrap = document.createElement('div');
-      wrap.className = 'composer__att';
-      if(att.kind === 'image' && att.preview){
-        const img = document.createElement('img');
-        img.src = att.preview;
-        img.alt = att.file.name || 'image';
-        wrap.appendChild(img);
-      } else {
-        const info = document.createElement('div');
-        info.className = 'composer__att-info';
-        const icon = att.kind === 'video' ? '🎬' : (att.kind === 'audio' ? '🎵' : '📎');
-        const size = formatBytes(att.file.size);
-        info.textContent = `${icon} ${truncateFileName(att.file.name)}${size ? `\n${size}` : ''}`;
-        wrap.appendChild(info);
-      }
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'composer__att-remove';
-      btn.textContent = '×';
-      btn.onclick = ()=> removeAttachment(idx);
-      wrap.appendChild(btn);
-      attachmentsPreview.appendChild(wrap);
+    /********** Настройки Supabase **********/
+    const SUPABASE_URL = "https://guoacfwfjunuqpdvjfwp.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1b2FjZndmanVudXFwZHZqZndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MDEwODYsImV4cCI6MjA3ODE3NzA4Nn0.WuUs9pXqncVnRm33K-Y3DQcpQByk4xVoxVqPPneqRxI";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true },
+      realtime: { params: { eventsPerSecond: 5 } }
     });
-  }
 
-  function enforceMobileOnly(){
-    if(isMobile()){ hide(blocker); show(app); }
-    else { show(blocker); hide(app); }
-  }
+    /********** DOM **********/
+    const roleTitle = document.getElementById('roleTitle');
 
-  async function isUsernameFree(username){
-    const [{ data: a }, { data: c }] = await Promise.all([
-      sb.from('admin_users').select('username').eq('username', username).maybeSingle(),
-      sb.from('clients').select('username').eq('username', username).maybeSingle()
-    ]);
-    return !a && !c;
-  }
+    const tabChat = document.getElementById('tabChat');
+    const tabContracts = document.getElementById('tabContracts');
+    const sectionChat = document.getElementById('sectionChat');
+    const sectionContracts = document.getElementById('sectionContracts');
 
-  /********** Аутентификация **********/
-  tabLogin.onclick = () => { tabLogin.classList.add('tab--active'); tabReg.classList.remove('tab--active'); show(loginView); hide(regView); };
-  tabReg.onclick   = () => { tabReg.classList.add('tab--active'); tabLogin.classList.remove('tab--active'); show(regView); hide(loginView); };
+    const chatList = document.getElementById('chatList');
+    const msgText = document.getElementById('msgText');
+    const sendBtn = document.getElementById('sendBtn');
+    const attachBtn = document.getElementById('attachBtn');
+    const fileInput = document.getElementById('fileInput');
 
-  loginBtn.onclick = async () => {
-    hide(loginPending);
+    const dealsList = document.getElementById('dealsList');
+    const addDealBtn = document.getElementById('addDealBtn');
 
-    /* === ЛОГ: попытка входа (без пароля) ================================= */
-    try {
-      await sb.from('audit_log').insert({
-        event: 'auth_attempt',
-        payload: { email: loginEmail.value.trim().toLowerCase() },
-        user_agent: navigator.userAgent
+    const clientsMenu = document.getElementById('clientsMenu');
+
+    /********** Состояние **********/
+    let actor = null;           // { kind:'admin'|'client', role?: 'admin1'|'admin2'|'admin_team', row }
+    let currentClientId = null;
+    let subMsgs = null, subDeals = null;
+    const pendingFiles = [];
+
+    /********** Утилиты **********/
+    const fmt = ts => new Date(ts).toLocaleString();
+    const IMG = /(png|jpg|jpeg|webp|gif|heic|heif|bmp|avif)$/i;
+    const VID = /(mp4|webm|mov|m4v|ogg)$/i;
+    const AUD = /(mp3|wav|ogg|m4a|aac|flac)$/i;
+
+    function kindOf(file){
+      const ext = (file.name.split('.').pop()||'').toLowerCase();
+      if(file.type.startsWith('image/') || IMG.test(ext)) return 'image';
+      if(file.type.startsWith('video/') || VID.test(ext)) return 'video';
+      if(file.type.startsWith('audio/') || AUD.test(ext)) return 'audio';
+      return 'file';
+    }
+    function sanitize(name){
+      return (name||'file').trim().replace(/[^a-zA-Z0-9_.-]+/g,'_') || 'file';
+    }
+
+    /********** Вкладки с View Transitions **********/
+    [tabChat, tabContracts].forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.startViewTransition?.(() => {
+          tabChat.classList.toggle('active', btn === tabChat);
+          tabContracts.classList.toggle('active', btn === tabContracts);
+          sectionChat.classList.toggle('active', btn === tabChat);
+          sectionContracts.classList.toggle('active', btn === tabContracts);
+        }) || (() => {
+          tabChat.classList.toggle('active', btn === tabChat);
+          tabContracts.classList.toggle('active', btn === tabContracts);
+          sectionChat.classList.toggle('active', btn === tabChat);
+          sectionContracts.classList.toggle('active', btn === tabContracts);
+        })();
       });
-    } catch(e) { /* тихо */ }
-
-    const { error } = await sb.auth.signInWithPassword({
-      email: loginEmail.value.trim().toLowerCase(),
-      password: loginPass.value
     });
-    if(error){ alert(error.message); return; }
 
-    /* === ЛОГ: успешный вход ============================================== */
-    try {
+    /********** Авторизация и роль **********/
+    (async ()=>{
       const { data: { user } } = await sb.auth.getUser();
-      await sb.from('audit_log').insert({
-        event: 'auth_success',
-        actor_id: user?.id || null,
-        payload: { email: loginEmail.value.trim().toLowerCase() },
-        user_agent: navigator.userAgent
-      });
-    } catch(e) { /* тихо */ }
-
-    await postAuth();
-  };
-
-  regBtn.onclick = async () => {
-    hide(regOk);
-    const email = regEmail.value.trim().toLowerCase();
-    const password = regPass.value;
-    const full_name = regName.value.trim();
-    const username = regUser.value.trim();
-    const phone = regPhone.value.trim();
-
-    if(!(await isUsernameFree(username))){
-      alert('Такой логин уже используется. Выберите другой.');
-      return;
-    }
-
-    /* === ЛОГ: попытка регистрации ======================================= */
-    try {
-      await sb.from('audit_log').insert({
-        event: 'auth_attempt',
-        payload: { email, action: 'signup', username },
-        user_agent: navigator.userAgent
-      });
-    } catch(e){}
-
-    const { error } = await sb.auth.signUp({
-      email, password,
-      options: { data: { full_name, username, phone, role_hint:'client' } }
-    });
-    if(error){ alert(error.message); return; }
-    show(regOk);
-
-    // Сохранить логин/пароль в браузере (если поддерживается)
-    if('credentials' in navigator && window.PasswordCredential){
-      try{
-        const cred = new PasswordCredential({ id: email, password, name: full_name });
-        await navigator.credentials.store(cred);
-      }catch{}
-    }
-  };
-
-  async function postAuth(){
-    const { data: { user } } = await sb.auth.getUser();
-    if(!user){ show(authModal); return; }
-
-    // 1) Проверяем admin_users
-    const { data: aRow, error: aErr } =
-      await sb.from('admin_users').select('*').eq('id', user.id).maybeSingle();
-    if (aErr) { alert('RLS admin_users: ' + aErr.message); return; }
-
-    if (aRow){
-      actor = { kind:'admin', role: aRow.role, row: aRow };
-      roleBadge.textContent = aRow.role.toUpperCase();
-      show(adminBtn); show(clientSwitcher); show(addDealBtn);
-      hide(authModal);
-      await fillAdminClientSwitcher();
-      return;
-    }
-
-    // 2) Проверяем clients (для обычного клиента)
-    const { data: cRow, error: cErr } =
-      await sb.from('clients').select('*').eq('id', user.id).maybeSingle();
-    if (cErr) { alert('RLS clients: ' + cErr.message); return; }
-
-    if(!cRow){ show(authModal); return; }
-    if(!cRow.approved){
-      show(authModal); tabLogin.click(); show(loginPending); return;
-    }
-    actor = { kind:'client', row: cRow };
-    roleBadge.textContent = 'CLIENT';
-    titleEl.textContent = 'Ваш чат';
-    hide(adminBtn); hide(clientSwitcher); hide(authModal);
-    currentClientId = cRow.id;
-    show(addDealBtn);
-    await afterClientSelected();
-  }
-
-  async function fillAdminClientSwitcher(){
-    let query = sb.from('clients').select('id, full_name, username, approved, assigned_admin_team_id').order('created_at', { ascending:true });
-    if(actor.role === 'admin_team'){
-      query = query.eq('assigned_admin_team_id', actor.row.id);
-    }
-    const { data: rows, error } = await query;
-    if(error){ console.error(error); return; }
-
-    clientSwitcher.innerHTML = '';
-    (rows||[]).forEach(r=>{
-      const opt = document.createElement('option');
-      opt.value = r.id;
-      opt.textContent = (r.full_name || r.username) + (r.approved ? '' : ' (не подтвержд.)');
-      clientSwitcher.appendChild(opt);
-    });
-    if(rows && rows.length){
-      currentClientId = rows[0].id;
-      titleEl.textContent = 'Мессенджер';
-      await afterClientSelected();
-    }else{
-      currentClientId = null;
-      titleEl.textContent = 'Нет клиентов';
-      chatList.innerHTML = '';
-      dealsWrap.innerHTML = '';
-    }
-    clientSwitcher.onchange = async ()=>{
-      const sel = rows.find(x=>x.id===clientSwitcher.value);
-      currentClientId = sel?.id || null;
-      titleEl.textContent = sel ? 'Мессенджер' : 'Нет клиентов';
-      await afterClientSelected();
-    };
-  }
-
-  async function afterClientSelected(){
-    await unsubscribeAll();
-    await loadMessages();
-    await loadDeals();
-    await subscribeAll();
-  }
-
-  /********** Чат **********/
-  async function loadMessages(){
-    chatList.innerHTML = '';
-    if(!currentClientId) return;
-    const { data, error } = await sb.from('messages').select('*').eq('client_id', currentClientId).order('created_at', { ascending:true }).limit(600);
-    if(error){ console.error(error); return; }
-    data.forEach(renderMsg);
-    chatList.scrollTop = chatList.scrollHeight;
-  }
-
-  function renderMsg(m){
-    const meId = (actor?.row?.id);
-    const el = document.createElement('div');
-    el.className = 'msg ' + (m.sender_id===meId ? 'msg--me':'');
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble ' + (m.sender_id===meId ? 'bubble--me':'');
-    if(m.type==='bundle'){
-      let payload = null;
-      if(typeof m.content === 'string'){
-        try{ payload = JSON.parse(m.content); }catch{}
-      } else if(m.content && typeof m.content === 'object'){
-        payload = m.content;
-      }
-      const attachments = Array.isArray(payload?.attachments) ? payload.attachments : [];
-      if(attachments.length){
-        const wrap = document.createElement('div');
-        wrap.className = 'bubble__attachments';
-        attachments.forEach(att=>{
-          if(!att || !att.url) return;
-          const box = document.createElement('div');
-          box.className = 'bubble__attachment';
-          if(att.type === 'image'){
-            const link=document.createElement('a');
-            link.href=att.url;
-            link.target='_blank';
-            link.rel='noopener noreferrer';
-            const img=document.createElement('img');
-            img.src=att.url;
-            img.alt=att.name||'image';
-            link.appendChild(img);
-            box.appendChild(link);
-          }else if(att.type === 'video'){
-            const v=document.createElement('video');
-            v.src=att.url;
-            v.controls=true;
-            box.appendChild(v);
-          }else if(att.type === 'audio'){
-            const audio=document.createElement('audio');
-            audio.src=att.url;
-            audio.controls=true;
-            audio.style.width='100%';
-            box.appendChild(audio);
-            if(att.name){
-              const cap=document.createElement('div');
-              cap.style.padding='6px 10px';
-              cap.style.fontSize='14px';
-              const sizeLabel = formatBytes(att.size);
-              cap.textContent=sizeLabel ? `${att.name} (${sizeLabel})` : att.name;
-              box.appendChild(cap);
-            }
-          }else{
-            const link=document.createElement('a');
-            link.href=att.url;
-            link.target='_blank';
-            link.rel='noopener noreferrer';
-            const sizeLabel = formatBytes(att.size);
-            link.textContent=`📎 ${att.name || 'Файл'}${sizeLabel ? ` (${sizeLabel})` : ''}`;
-            box.appendChild(link);
-          }
-          wrap.appendChild(box);
-        });
-        bubble.appendChild(wrap);
-      }
-      const textPart = typeof payload?.text === 'string' ? payload.text.trim() : '';
-      if(textPart){
-        const t=document.createElement('div');
-        t.className='bubble__text';
-        t.textContent=textPart;
-        bubble.appendChild(t);
-      } else if(!attachments.length && typeof m.content === 'string'){
-        const t=document.createElement('div');
-        t.className='bubble__text';
-        t.textContent=m.content;
-        bubble.appendChild(t);
-      }
-    }else if(m.type==='text'){
-      bubble.textContent = m.content || '';
-    }else if(m.type==='image'){
-      const img=document.createElement('img'); img.src=m.file_url; img.alt='image'; bubble.appendChild(img);
-      if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
-    }else if(m.type==='video'){
-      const v=document.createElement('video'); v.src=m.file_url; v.controls=true; bubble.appendChild(v);
-      if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
-    }else if(m.type==='audio'){
-      const aEl=document.createElement('audio'); aEl.src=m.file_url; aEl.controls=true; aEl.style.width='100%'; bubble.appendChild(aEl);
-      if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
-    }else{
-      const a=document.createElement('a'); a.href=m.file_url; a.target='_blank'; a.textContent='Файл'; bubble.appendChild(a);
-      if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
-    }
-    const meta=document.createElement('div'); meta.className='bubble__meta'; meta.textContent = fmt(m.created_at);
-    bubble.appendChild(meta);
-    el.appendChild(bubble);
-    chatList.appendChild(el);
-  }
-
-  if(msgFile){
-    msgFile.addEventListener('change', ()=>{
-      const files = Array.from(msgFile.files || []);
-      if(!files.length) return;
-      const available = MAX_ATTACHMENTS - pendingAttachments.length;
-      if(available <= 0){
-        alert(`Можно прикрепить не более ${MAX_ATTACHMENTS} файлов за одно сообщение.`);
-        msgFile.value = '';
+      if(!user){
+        // Если логин вне этого файла — просто считаем клиента
+        roleTitle.textContent = 'Client';
+        actor = { kind:'client', row: { id: 'anonymous' } };
+        await bootstrapAsClient();
         return;
       }
-      if(files.length > available){
-        alert(`Можно прикрепить не более ${MAX_ATTACHMENTS} файлов за одно сообщение.`);
+      // Пытаемся найти админа
+      const { data: aRow } = await sb.from('admin_users').select('*').eq('id', user.id).maybeSingle();
+      if(aRow){
+        actor = { kind:'admin', role: aRow.role, row: aRow };
+        roleTitle.textContent = (aRow.role || 'admin').replace('_',' ');
+        await bootstrapAsAdmin();
+        return;
       }
-      files.slice(0, available).forEach(file=>{
-        const kind = detectFileKind(file);
-        const preview = kind === 'image' ? URL.createObjectURL(file) : null;
-        pendingAttachments.push({ file, kind, preview });
+      // Иначе — клиент
+      const { data: cRow } = await sb.from('clients').select('*').eq('id', user.id).maybeSingle();
+      actor = { kind:'client', row: cRow || { id: user.id } };
+      roleTitle.textContent = 'Client';
+      await bootstrapAsClient();
+    })();
+
+    async function bootstrapAsAdmin(){
+      // меню клиентов
+      await fillClientsMenu();
+      // выберем первого доступного
+      if(!currentClientId){
+        const { data: first } = await sb.from('clients').select('id').order('created_at', { ascending:true }).limit(1).maybeSingle();
+        if(first){ currentClientId = first.id; }
+      }
+      await loadChat();
+      await loadDeals();
+      subscribe();
+    }
+
+    async function bootstrapAsClient(){
+      // выясняем свой client_id
+      if(actor.row?.id){
+        const { data: self } = await sb.from('clients').select('id').eq('id', actor.row.id).maybeSingle();
+        currentClientId = self?.id || null;
+      }
+      await loadChat();
+      await loadDeals();
+      subscribe();
+    }
+
+    async function fillClientsMenu(){
+      clientsMenu.innerHTML = '';
+      let query = sb.from('clients').select('id, full_name, username, approved').order('created_at', { ascending:true });
+      if(actor.role === 'admin_team'){
+        query = query.eq('assigned_admin_team_id', actor.row.id);
+      }
+      const { data: rows } = await query;
+      (rows||[]).forEach(r=>{
+        const mi = document.createElement('menuitem');
+        const a = document.createElement('a');
+        a.textContent = (r.full_name || r.username || r.id) + (r.approved ? '' : ' (не подтв.)');
+        a.href = 'javascript:void(0)';
+        a.onclick = async ()=>{
+          currentClientId = r.id;
+          await reloadAll();
+        };
+        mi.appendChild(a);
+        clientsMenu.appendChild(mi);
       });
-      refreshAttachmentsPreview();
-      msgFile.value = '';
+    }
+
+    /********** Чат **********/
+    async function loadChat(){
+      chatList.innerHTML = '';
+      if(!currentClientId) return;
+      const { data, error } = await sb
+        .from('messages')
+        .select('*')
+        .eq('client_id', currentClientId)
+        .order('created_at', { ascending:true })
+        .limit(600);
+      if(error) { console.error(error); return; }
+      (data||[]).forEach(renderMsg);
+      chatList.scrollTop = chatList.scrollHeight;
+    }
+
+    function renderMsg(m){
+      const isMe = m.sender_id === (actor?.row?.id);
+      const wrap = document.createElement('div');
+      wrap.className = 'msg' + (isMe ? ' me' : '');
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble' + (isMe ? ' me' : '');
+      if(m.type === 'bundle'){
+        // ожидаем JSON: { text, attachments:[{type,url,name,size}] }
+        let payload = null;
+        if(typeof m.content === 'string'){ try{ payload = JSON.parse(m.content) }catch{} }
+        if(m.content && typeof m.content === 'object'){ payload = m.content }
+        const text = payload?.text;
+        const atts = Array.isArray(payload?.attachments) ? payload.attachments : [];
+
+        if(atts.length){
+          const grid = document.createElement('div');
+          grid.style.display = 'grid';
+          grid.style.gridTemplateColumns = 'repeat(auto-fit,minmax(120px,1fr))';
+          grid.style.gap = '8px';
+          grid.style.marginBottom = text ? '8px' : '0';
+          atts.forEach(a=>{
+            const cell = document.createElement('div');
+            cell.style.border = '1px solid var(--border)';
+            cell.style.borderRadius = '10px';
+            cell.style.overflow = 'hidden';
+            if(a.type === 'image'){
+              const im = document.createElement('img'); im.src=a.url; im.alt=a.name||'image'; im.style.width='100%'; im.style.display='block';
+              cell.appendChild(im);
+            }else if(a.type === 'video'){
+              const v = document.createElement('video'); v.src=a.url; v.controls=true; v.style.width='100%';
+              cell.appendChild(v);
+            }else if(a.type === 'audio'){
+              const au = document.createElement('audio'); au.src=a.url; au.controls=true; au.style.width='100%';
+              cell.appendChild(au);
+            }else{
+              const link = document.createElement('a'); link.href=a.url; link.target='_blank'; link.textContent='📎 '+(a.name||'file');
+              link.style.display='block'; link.style.padding='8px';
+              cell.appendChild(link);
+            }
+            grid.appendChild(cell);
+          });
+          bubble.appendChild(grid);
+        }
+        if(text){
+          const t = document.createElement('div');
+          t.textContent = text;
+          bubble.appendChild(t);
+        }
+      } else if (m.type === 'text'){
+        bubble.textContent = m.content || '';
+      } else if (m.type === 'image'){
+        const im = document.createElement('img'); im.src=m.file_url; im.alt='image'; im.style.maxWidth='100%';
+        bubble.appendChild(im);
+        if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
+      } else if (m.type === 'video'){
+        const v = document.createElement('video'); v.src=m.file_url; v.controls=true; v.style.maxWidth='100%';
+        bubble.appendChild(v);
+        if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
+      } else if (m.type === 'audio'){
+        const a = document.createElement('audio'); a.src=m.file_url; a.controls=true; a.style.width='100%';
+        bubble.appendChild(a);
+        if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
+      } else {
+        const link = document.createElement('a'); link.href=m.file_url; link.target='_blank'; link.textContent='📎 файл';
+        bubble.appendChild(link);
+        if(m.content){ const t=document.createElement('div'); t.style.marginTop='6px'; t.textContent=m.content; bubble.appendChild(t); }
+      }
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = fmt(m.created_at);
+      bubble.appendChild(meta);
+
+      wrap.appendChild(bubble);
+      chatList.appendChild(wrap);
+    }
+
+    attachBtn.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', ()=>{
+      pendingFiles.splice(0, pendingFiles.length, ...Array.from(fileInput.files || []));
     });
-  }
 
-  if(composer){
-    composer.addEventListener('submit', async (e)=>{
-      e.preventDefault();
+    sendBtn.addEventListener('click', async ()=>{
       if(!currentClientId || !actor) return;
-
       const text = msgText.value.trim();
-      const attachments = pendingAttachments.slice();
-      if(!text && !attachments.length) return;
+      if(!text && !pendingFiles.length) return;
 
-      if(sendBtn) sendBtn.disabled = true;
+      sendBtn.disabled = true;
       try{
         const uploaded = [];
-        if(attachments.length){
+        if(pendingFiles.length){
           const stamp = Date.now();
-          for(let i=0;i<attachments.length;i++){
-            const att = attachments[i];
-            const safeName = sanitizeFileName(att.file.name);
-            const path = `messages/${currentClientId}/${stamp}_${i}_${safeName}`;
-            const { error: upErr } = await sb.storage.from('uploads').upload(path, att.file, { upsert:false });
-            if(upErr){
-              alert('Не удалось загрузить файл');
-              throw upErr;
-            }
+          for(let i=0;i<pendingFiles.length;i++){
+            const f = pendingFiles[i];
+            const k = kindOf(f);
+            const safe = sanitize(f.name);
+            const path = `messages/${currentClientId}/${stamp}_${i}_${safe}`;
+            const { error: upErr } = await sb.storage.from('uploads').upload(path, f, { upsert:false });
+            if(upErr){ alert('Ошибка загрузки'); throw upErr; }
             const { data: pub } = sb.storage.from('uploads').getPublicUrl(path);
-            uploaded.push({
-              type: att.kind === 'audio' ? 'audio' : (att.kind === 'image' ? 'image' : att.kind === 'video' ? 'video' : 'file'),
-              url: pub.publicUrl,
-              name: att.file.name,
-              size: att.file.size
-            });
+            uploaded.push({ type:k, url:pub.publicUrl, name:f.name, size:f.size });
           }
         }
 
@@ -1152,10 +628,7 @@
             content = null;
           } else {
             type = 'bundle';
-            content = JSON.stringify({
-              text,
-              attachments: uploaded
-            });
+            content = JSON.stringify({ text, attachments: uploaded });
             file_url = null;
           }
         }
@@ -1163,332 +636,74 @@
         const { error } = await sb.from('messages').insert({
           client_id: currentClientId,
           sender_id: actor.row.id,
-          type,
-          content,
-          file_url
+          type, content, file_url
         });
-        if(error){
-          alert('Ошибка отправки');
-          console.error(error);
-          return;
-        }
+        if(error){ alert('Ошибка отправки'); console.error(error); return; }
 
         msgText.value = '';
-        msgFile.value = '';
-        pendingAttachments.forEach(att=>{ if(att.preview) URL.revokeObjectURL(att.preview); });
-        pendingAttachments = [];
-        refreshAttachmentsPreview();
+        fileInput.value = '';
+        pendingFiles.splice(0, pendingFiles.length);
         chatList.scrollTop = chatList.scrollHeight;
-      }catch(err){
-        console.error(err);
       }finally{
-        if(sendBtn) sendBtn.disabled = false;
-      }
-    });
-  }
-
-  /********** Сделки **********/
-  async function loadDeals(){
-    dealsWrap.innerHTML = '';
-    if(!currentClientId) return;
-    const { data, error } = await sb.from('deals').select('*').eq('client_id', currentClientId).order('created_at', { ascending:false });
-    if(error){ console.error(error); return; }
-    data.forEach(renderDeal);
-  }
-
-  function renderDeal(d){
-    const el=document.createElement('div'); el.className='card deal'; el.dataset.dealId=d.id;
-
-    const top=document.createElement('div'); top.className='deal__top';
-    const title=document.createElement('div'); title.className='deal__title'; title.textContent=d.title || ('Сделка ' + new Date(d.created_at).toLocaleDateString());
-    const toggle=document.createElement('button'); toggle.className='btn btn--ghost'; toggle.textContent='Раскрыть';
-    toggle.onclick=()=>{ el.classList.toggle('deal--open'); toggle.textContent=el.classList.contains('deal--open')?'Свернуть':'Раскрыть'; };
-    top.appendChild(title); top.appendChild(toggle);
-
-    const body=document.createElement('div'); body.className='deal__body';
-
-    // Материалы
-    const sec1=document.createElement('div'); sec1.className='deal__section';
-    const h1=document.createElement('h4'); h1.textContent='Материалы сделки'; sec1.appendChild(h1);
-    const grid=document.createElement('div'); grid.className='deal__grid'; sec1.appendChild(grid);
-
-    const addLbl=document.createElement('label'); addLbl.className='deal__add'; addLbl.textContent='+ Добавить файл';
-    const addInp=document.createElement('input'); addInp.type='file'; addInp.accept='image/*,video/*'; addInp.capture='environment'; addInp.className='hidden';
-    addLbl.appendChild(addInp); sec1.appendChild(addLbl);
-
-    addInp.onchange = async ()=>{
-      const file = addInp.files?.[0]; if(!file) return;
-      const ext = (file.name.split('.').pop()||'').toLowerCase();
-      const isImg = /(png|jpg|jpeg|webp|gif|heic|heif|bmp|avif)$/.test(ext)||file.type.startsWith('image/');
-      const isVid = /(mp4|webm|mov|m4v|ogg)$/.test(ext)||file.type.startsWith('video/');
-      const type = isImg ? 'image' : (isVid ? 'video':'file');
-
-      const path=`deals/${d.id}/${Date.now()}_${file.name}`;
-      const { error: upErr } = await sb.storage.from('uploads').upload(path, file, { upsert:false });
-      if(upErr){ alert('Не удалось загрузить файл'); return; }
-      const { data: pub } = sb.storage.from('uploads').getPublicUrl(path);
-
-      const { error } = await sb.rpc('add_deal_material', { p_deal_id: d.id, p_type: type, p_url: pub.publicUrl });
-      if(error){ alert('Ошибка сохранения материала'); console.error(error); }
-      addInp.value='';
-    };
-
-    // Данные сделки
-    const sec2=document.createElement('div'); sec2.className='deal__section';
-    const h2=document.createElement('h4'); h2.textContent='Данные сделки'; sec2.appendChild(h2);
-    const form=document.createElement('div'); form.className='deal__form';
-    const dtVal = d.deal_datetime ? new Date(d.deal_datetime).toISOString().slice(0,16) : '';
-    form.innerHTML = `
-      <label>Дата и время
-        <input type="datetime-local" value="${dtVal}" data-k="deal_datetime">
-      </label>
-      <label>Адрес сделки
-        <input type="text" value="${d.address??''}" data-k="address">
-      </label>
-      <label>Контакт продавца
-        <input type="text" value="${d.seller_contact??''}" data-k="seller_contact">
-      </label>
-      <label>Готовность продавца
-        <input type="text" value="${d.seller_ready??''}" data-k="seller_ready">
-      </label>
-      <label>Контакт покупателя
-        <input type="text" value="${d.buyer_contact??''}" data-k="buyer_contact">
-      </label>
-      <label>Готовность покупателя
-        <input type="text" value="${d.buyer_ready??''}" data-k="buyer_ready">
-      </label>
-      <label>Прочее
-        <textarea data-k="notes">${d.notes??''}</textarea>
-      </label>
-      <button class="btn btn--primary" data-action="save">Сохранить</button>
-    `;
-    form.querySelector('[data-action="save"]').onclick = async ()=>{
-      const payload={};
-      form.querySelectorAll('input,textarea').forEach(inp=>{
-        let v = inp.value; const k=inp.dataset.k;
-        if(k==='deal_datetime' && v){ v = new Date(v).toISOString(); }
-        payload[k] = v||null;
-      });
-      const { error } = await sb.from('deals').update(payload).eq('id', d.id);
-      if(error){ alert('Ошибка сохранения'); console.error(error); }
-    };
-
-    body.appendChild(sec1); body.appendChild(sec2);
-
-    // Рендер материалов
-    const mats = Array.isArray(d.materials) ? d.materials : [];
-    mats.forEach(m=>{
-      if(m.type==='image'){
-        const img=document.createElement('img'); img.src=m.url; grid.appendChild(img);
-      }else if(m.type==='video'){
-        const v=document.createElement('video'); v.src=m.url; v.controls=true; grid.appendChild(v);
-      }else{
-        const a=document.createElement('a'); a.href=m.url; a.target='_blank'; a.textContent='Файл'; grid.appendChild(a);
+        sendBtn.disabled = false;
       }
     });
 
-    el.appendChild(top); el.appendChild(body);
-    dealsWrap.appendChild(el);
-  }
-
-  addDealBtn.onclick = async ()=>{
-    if(!currentClientId) return;
-    const title = prompt('Название сделки');
-    if(title===null) return;
-    const { error } = await sb.from('deals').insert({ client_id: currentClientId, title });
-    if(error){ alert('Не удалось создать сделку'); }
-  };
-
-  /********** Realtime **********/
-  async function unsubscribeAll(){
-    subMsgs?.unsubscribe(); subDeals?.unsubscribe();
-  }
-  async function subscribeAll(){
-    if(!currentClientId) return;
-
-    subMsgs = sb.channel('messages_rt')
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`client_id=eq.${currentClientId}`},(payload)=>{
-        renderMsg(payload.new); chatList.scrollTop = chatList.scrollHeight;
-      }).subscribe();
-
-    subDeals = sb.channel('deals_rt')
-      .on('postgres_changes',{event:'*',schema:'public',table:'deals',filter:`client_id=eq.${currentClientId}`},()=>{
-        loadDeals();
-      }).subscribe();
-  }
-
-  /********** Админпанель **********/
-  adminBtn.onclick = async ()=>{
-    await refreshAdmin();
-    show(adminSheet);
-  };
-  adminClose.onclick = ()=> hide(adminSheet);
-
-  async function refreshAdmin(){
-    const { data: pend } = await sb.from('clients').select('id,email,full_name,username,created_at').eq('approved', false).order('created_at', { ascending:true });
-    pendingList.innerHTML = '';
-    (pend||[]).forEach(u=>{
-      const it=document.createElement('div'); it.className='item';
-      it.innerHTML = `<strong>${u.full_name || u.username}</strong><div class="muted" style="font-size:12px">${u.email||''}</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn--primary" data-approve="${u.id}">Подтвердить</button>
-        <button class="btn btn--ghost" data-reject="${u.id}">Отклонить</button>
-      </div>`;
-      pendingList.appendChild(it);
+    /********** CONTRACTS **********/
+    async function loadDeals(){
+      dealsList.innerHTML = '';
+      if(!currentClientId) return;
+      const { data, error } = await sb
+        .from('deals')
+        .select('*')
+        .eq('client_id', currentClientId)
+        .order('created_at', { ascending:false });
+      if(error){ console.error(error); return; }
+      (data||[]).forEach(renderDeal);
+    }
+    function renderDeal(d){
+      const el = document.createElement('div');
+      el.className = 'deal';
+      el.innerHTML = `
+        <h4>${d.title || 'Сделка'}</h4>
+        <small>${fmt(d.created_at)}</small>
+        ${d.address ? `<div style="margin-top:6px">📍 ${d.address}</div>` : ''}
+      `;
+      dealsList.appendChild(el);
+    }
+    addDealBtn.addEventListener('click', async ()=>{
+      if(!currentClientId) return;
+      const title = prompt('Название сделки');
+      if(title === null) return;
+      const { error } = await sb.from('deals').insert({ client_id: currentClientId, title });
+      if(error){ alert('Не удалось создать сделку'); }
     });
-    pendingList.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>approveClient(b.dataset.approve,true));
-    pendingList.querySelectorAll('[data-reject]').forEach(b=>b.onclick=()=>approveClient(b.dataset.reject,false));
 
-    const { data: clients } = await sb.from('clients').select('id,full_name,username,assigned_admin_team_id').order('created_at', { ascending:true });
-    const { data: team } = await sb.from('admin_users').select('id,full_name,username').eq('role','admin_team').order('full_name', { ascending:true });
+    /********** Realtime **********/
+    function subscribe(){
+      subMsgs?.unsubscribe?.();
+      subDeals?.unsubscribe?.();
+      if(!currentClientId) return;
 
-    assignList.innerHTML='';
-    (clients||[]).forEach(c=>{
-      const it=document.createElement('div'); it.className='item';
-      const sel=document.createElement('select'); sel.className='icon-btn'; sel.style.width='100%';
-      const none=document.createElement('option'); none.value=''; none.textContent='— Не назначен —'; sel.appendChild(none);
-      (team||[]).forEach(t=>{
-        const o=document.createElement('option'); o.value=t.id; o.textContent=t.full_name || t.username;
-        if(c.assigned_admin_team_id===t.id) o.selected=true; sel.appendChild(o);
-      });
-      sel.onchange = async ()=>{ await sb.from('clients').update({ assigned_admin_team_id: sel.value || null }).eq('id', c.id); };
-      it.innerHTML = `<strong>${c.full_name || c.username}</strong>`;
-      it.appendChild(sel);
-      assignList.appendChild(it);
-    });
-  }
+      subMsgs = sb.channel('messages_rt')
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`client_id=eq.${currentClientId}`}, (p)=>{
+          renderMsg(p.new);
+          chatList.scrollTop = chatList.scrollHeight;
+        }).subscribe();
 
-  async function approveClient(id, ok){
-    if(actor?.role!=='admin1' && actor?.role!=='admin2'){ alert('Недостаточно прав'); return; }
-    if(ok) await sb.from('clients').update({ approved:true }).eq('id', id);
-    else   await sb.from('clients').update({ approved:false }).eq('id', id);
-    await refreshAdmin();
-    if(clientSwitcher && !clientSwitcher.classList.contains('hidden')) await fillAdminClientSwitcher();
-  }
-
-  /********** Навигация (свайп) **********/
-  const swipeState = {
-    active:false,
-    pointerId:null,
-    startX:0,
-    curX:0,
-    width:0
-  };
-
-  const screensCount = swipe.querySelectorAll('.screen').length;
-  const maxScreenIndex = Math.max(0, screensCount - 1);
-  let activeScreen = 0;
-
-  function applySwipeTransform(offsetPercent = 0){
-    const base = -activeScreen * 100;
-    swipe.style.transform = `translateX(${base + offsetPercent}%)`;
-  }
-
-  function updateTabs(){
-    if(activeScreen === 0){
-      tabChat.classList.add('tabbtn--active');
-      tabDeals.classList.remove('tabbtn--active');
-    } else {
-      tabDeals.classList.add('tabbtn--active');
-      tabChat.classList.remove('tabbtn--active');
+      subDeals = sb.channel('deals_rt')
+        .on('postgres_changes',{event:'*',schema:'public',table:'deals',filter:`client_id=eq.${currentClientId}`}, ()=>{
+          loadDeals();
+        }).subscribe();
     }
-  }
 
-  function setScreen(idx){
-    const next = Math.min(Math.max(idx, 0), maxScreenIndex);
-    activeScreen = next;
-    swipe.style.transition = '';
-    applySwipeTransform();
-    updateTabs();
-  }
-
-  function resetSwipe(){
-    swipeState.active = false;
-    swipeState.pointerId = null;
-    swipeState.startX = 0;
-    swipeState.curX = 0;
-    swipeState.width = 0;
-  }
-
-  swipe.addEventListener('pointerdown', e=>{
-    if(e.pointerType !== 'touch' && e.pointerType !== 'pen' && e.pointerType !== 'mouse') return;
-    swipeState.active = true;
-    swipeState.pointerId = e.pointerId;
-    swipeState.startX = e.clientX;
-    swipeState.curX = e.clientX;
-    swipeState.width = Math.max(swipe.offsetWidth / Math.max(screensCount, 1), 1);
-    swipe.style.transition = 'none';
-    try{ swipe.setPointerCapture(e.pointerId); }catch{}
-  });
-
-  swipe.addEventListener('pointermove', e=>{
-    if(!swipeState.active || e.pointerId !== swipeState.pointerId) return;
-    swipeState.curX = e.clientX;
-    const dx = swipeState.curX - swipeState.startX;
-    const offsetPercent = swipeState.width ? (dx / swipeState.width) * 100 : 0;
-    applySwipeTransform(offsetPercent);
-  });
-
-  const finishSwipe = e => {
-    if(!swipeState.active || e.pointerId !== swipeState.pointerId) return;
-    swipeState.curX = e.clientX;
-    const dx = swipeState.curX - swipeState.startX;
-    const viewportWidth = swipeState.width || (swipe.offsetWidth / Math.max(screensCount, 1));
-    const threshold = Math.max(viewportWidth * 0.18, 40);
-    swipe.style.transition = '';
-    const shouldGoNext = dx < -threshold && activeScreen < maxScreenIndex;
-    const shouldGoPrev = dx > threshold && activeScreen > 0;
-
-    if(shouldGoNext){
-      setScreen(activeScreen + 1);
-    } else if(shouldGoPrev){
-      setScreen(activeScreen - 1);
-    } else {
-      setScreen(activeScreen);
+    async function reloadAll(){
+      await loadChat();
+      await loadDeals();
+      subscribe();
     }
-    try{ swipe.releasePointerCapture(e.pointerId); }catch{}
-    resetSwipe();
-  };
 
-  swipe.addEventListener('pointerup', finishSwipe);
-  swipe.addEventListener('pointercancel', finishSwipe);
-  function goChat(){ setScreen(0); }
-  function goDeals(){ setScreen(1); }
-  tabChat.onclick=goChat; tabDeals.onclick=goDeals;
-
-  /********** Init **********/
-  enforceMobileOnly();
-  addEventListener('resize', enforceMobileOnly);
-
-  /********** Динамическая высота и клавиатура **********/
-  const rootStyle = document.documentElement.style;
-  let baseViewportHeight = window.innerHeight;
-  function updateViewportVars(){
-    const vv = window.visualViewport;
-    const height = vv?.height || window.innerHeight;
-    if(window.innerHeight > baseViewportHeight){
-      baseViewportHeight = window.innerHeight;
-    }
-    const offset = Math.max(baseViewportHeight - height, 0);
-    rootStyle.setProperty('--viewport-height', `${height}px`);
-    rootStyle.setProperty('--keyboard-offset', `${offset}px`);
-    const topOffset = vv?.offsetTop || 0;
-    rootStyle.setProperty('--viewport-offset-top', `${topOffset}px`);
-  }
-  updateViewportVars();
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', updateViewportVars);
-    window.visualViewport.addEventListener('scroll', updateViewportVars);
-  }
-
-  (async ()=>{
-    const { data:{ user } } = await sb.auth.getUser();
-    if(user){ await postAuth(); } else { show(authModal); }
-  })();
-  </script>
-
-  <!-- Регистрация Service Worker с версией для инвалидации -->
-  <script>
+    /********** Service Worker + автоперезагрузка при активации новой версии **********/
     if ('serviceWorker' in navigator) {
       const v = (window.APP_VERSION || Date.now()).toString();
       navigator.serviceWorker.register('/sw.js?v=' + v).then(reg => {
@@ -1503,7 +718,5 @@
       }).catch(console.warn);
     }
   </script>
-
-  <!-- Подсказка: создайте в Supabase публичный bucket 'uploads' -->
 </body>
 </html>
