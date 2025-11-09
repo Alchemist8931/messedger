@@ -15,7 +15,7 @@
 
   <!-- ===== Версия приложения: меняй при каждом деплое ===== -->
   <script>
-    window.APP_VERSION = '2025-11-09-07';
+    window.APP_VERSION = '2025-11-09-08';
     (async () => {
       try {
         const saved = localStorage.getItem('app_version');
@@ -177,6 +177,11 @@
     }
     nav a:active{
       box-shadow:0 0 calc(3px * var(--k)) var(--text); color:var(--text); transform:scale(.98); background:var(--surface);
+    }
+    #clientsMenu a.active{
+      background:var(--text);
+      color:var(--surface);
+      box-shadow:0 0 calc(6px * var(--k)) var(--text);
     }
 
     /* ====== Вкладки ====== */
@@ -450,6 +455,7 @@
     /********** Состояние **********/
     let actor = null;           // { kind:'admin'|'client', role?: 'admin1'|'admin2'|'admin_team', row }
     let currentClientId = null;
+    let clientsCache = [];
     let subMsgs = null, subDeals = null;
     const pendingFiles = [];
 
@@ -515,14 +521,7 @@
     async function bootstrapAsAdmin(){
       // меню клиентов
       await fillClientsMenu();
-      // выберем первого доступного
-      if(!currentClientId){
-        const { data: first } = await sb.from('clients').select('id').order('created_at', { ascending:true }).limit(1).maybeSingle();
-        if(first){ currentClientId = first.id; }
-      }
-      await loadChat();
-      await loadDeals();
-      subscribe();
+      await reloadAll();
     }
 
     async function bootstrapAsClient(){
@@ -536,27 +535,77 @@
       subscribe();
     }
 
+     function clientDisplayName(row){
+      return (row?.full_name || row?.username || row?.id || '').trim() || 'Клиент';
+    }
+
+    function updateStatusLabel(client){
+      if(!statusToggle) return;
+      statusToggle.textContent = client ? clientDisplayName(client) : 'Выберите клиента';
+    }
+
+    function highlightActiveClient(){
+      if(!clientsMenu) return;
+      const links = clientsMenu.querySelectorAll('a[data-client-id]');
+      links.forEach(link => {
+        link.classList.toggle('active', link.dataset.clientId === currentClientId);
+      });
+    }
+
     async function fillClientsMenu(){
+      if(!clientsMenu) return;
       clientsMenu.innerHTML = '';
       let query = sb.from('clients').select('id, full_name, username, approved').order('created_at', { ascending:true });
       if(actor.role === 'admin_team'){
         query = query.eq('assigned_admin_team_id', actor.row.id);
       }
       const { data: rows } = await query;
-      (rows||[]).forEach(r=>{
+      clientsCache = rows || [];
+
+      if(!clientsCache.length){
+        updateStatusLabel(null);
+        currentClientId = null;
+        const mi = document.createElement('menuitem');
+        const stub = document.createElement('span');
+        stub.textContent = 'Нет доступных клиентов';
+        stub.style.display = 'block';
+        stub.style.opacity = '0.7';
+        stub.style.padding = '10px';
+        stub.style.whiteSpace = 'nowrap';
+        mi.appendChild(stub);
+        clientsMenu.appendChild(mi);
+        return;
+      }
+
+      if(!currentClientId || !clientsCache.some(c => c.id === currentClientId)){
+        currentClientId = clientsCache[0]?.id || null;
+      }
+
+      clientsCache.forEach(r=>{
         const mi = document.createElement('menuitem');
         const a = document.createElement('a');
-        a.textContent = (r.full_name || r.username || r.id) + (r.approved ? '' : ' (не подтв.)');
+        a.textContent = clientDisplayName(r) + (r.approved ? '' : ' (не подтв.)');
         a.href = 'javascript:void(0)';
-        a.onclick = async (event)=>{
+        a.dataset.clientId = r.id;
+        a.addEventListener('click', async (event)=>{
           event.preventDefault();
+          if(currentClientId === r.id){
+            closeStatusMenu();
+            return;
+          }
           currentClientId = r.id;
+          updateStatusLabel(r);
+          highlightActiveClient();
           closeStatusMenu();
           await reloadAll();
-        };
+        });
         mi.appendChild(a);
         clientsMenu.appendChild(mi);
       });
+
+      const activeClient = clientsCache.find(c => c.id === currentClientId) || null;
+      updateStatusLabel(activeClient);
+      highlightActiveClient();
     }
 
     /********** Чат **********/
